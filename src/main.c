@@ -15,6 +15,7 @@
 
 #include <X11/Xlib.h>
 
+#include "main.h"
 #include "args.h"
 #include "cmd.h"
 
@@ -22,10 +23,6 @@
 
 Display *display;
 Window root;
-
-#ifndef MOD
-#define MOD Mod4Mask
-#endif
 
 #ifndef IPC_PATH
 #define IPC_PATH "/tmp/hfwm.sock"
@@ -87,8 +84,7 @@ dispatch_command(const char *s)
 
 	assert(s != NULL);
 
-	s += strspn(s, " \t\v\f\r\n");
-
+	s = s + strspn (s, " \t\v\f\r\n");
 	e = s + strcspn(s, " \t\v\f\r\n");
 
 	for (i = 0; i < sizeof a / sizeof *a; i++) {
@@ -125,6 +121,8 @@ void
 dispatch_key(const XEvent *e)
 {
 	assert(e->type == KeyPress);
+
+	fprintf(stderr, "keycode %d/%d\n", e->xkey.state, e->xkey.keycode);
 }
 
 static void
@@ -200,8 +198,6 @@ main(void)
 	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	/* TODO: all these come over IPC */
-	XGrabKey(display, XKeysymToKeycode(display, XStringToKeysym("a")), MOD, root, True, GrabModeAsync, GrabModeAsync);
-
 	XGrabButton(display, 1, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 	XGrabButton(display, 3, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
