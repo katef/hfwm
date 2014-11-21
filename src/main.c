@@ -79,7 +79,8 @@ dispatch_command(const char *s)
 		const char *cmd;
 		int (*f)(char *[]);
 	} a[] = {
-		{ "spawn", cmd_spawn }
+		{ "keybind", cmd_keybind },
+		{ "spawn",   cmd_spawn   }
 	};
 
 	assert(s != NULL);
