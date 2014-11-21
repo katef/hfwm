@@ -79,8 +79,9 @@ dispatch_command(const char *s)
 		const char *cmd;
 		int (*f)(char *[]);
 	} a[] = {
-		{ "keybind", cmd_keybind },
-		{ "spawn",   cmd_spawn   }
+		{ "keybind",   cmd_keybind   },
+		{ "mousebind", cmd_mousebind },
+		{ "spawn",     cmd_spawn     }
 	};
 
 	assert(s != NULL);
@@ -113,9 +114,11 @@ dispatch_command(const char *s)
 }
 
 void
-dispatch_mouse(const XEvent *e)
+dispatch_button(const XEvent *e)
 {
-	assert(e->type == ButtonPress || e->type == ButtonRelease || e->type == MotionNotify);
+	assert(e->type == ButtonPress || e->type == ButtonRelease);
+
+	fprintf(stderr, "button %d/%d\n", e->xbutton.state, e->xbutton.button);
 }
 
 void
@@ -145,10 +148,9 @@ event_x11(void)
 		}
 
 		switch (e.type) {
-		case KeyPress:      dispatch_key(&e);   break;
-		case ButtonPress:   dispatch_mouse(&e); break;
-		case ButtonRelease: dispatch_mouse(&e); break;
-		case MotionNotify:  dispatch_mouse(&e); break;
+		case KeyPress:      dispatch_key(&e);    break;
+		case ButtonPress:   dispatch_button(&e); break;
+		case ButtonRelease: dispatch_button(&e); break;
 
 		default:
 			fprintf(stderr, "unhandled event %d\n", e.type);
@@ -197,10 +199,6 @@ main(void)
 	ipc = ipc_listen(IPC_PATH);
 
 	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
-
-	/* TODO: all these come over IPC */
-	XGrabButton(display, 1, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-	XGrabButton(display, 3, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
 	r = system(HFWM_STARTUP);
 	if (r == -1 || r != 0) {

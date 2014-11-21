@@ -1,7 +1,9 @@
 #include <unistd.h>
 
-#include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 #include <X11/Xlib.h>
 
@@ -50,6 +52,34 @@ cmd_keybind(char *argv[])
 	}
 
 	if (!XGrabKey(display, kc, MOD, root, True, GrabModeAsync, GrabModeAsync)) {
+		return -1;
+	}
+
+	/* TODO: register command */
+
+	return 0;
+}
+
+int
+cmd_mousebind(char *argv[])
+{
+	int button;
+	char *e;
+
+	/* TODO: parse for mod */
+
+	button = strtol(argv[0], &e, 10);
+	if (button < 0 || button == ULONG_MAX || button > INT_MAX) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	if (*e != '\0') {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (!XGrabButton(display, button, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None)) {
 		return -1;
 	}
 
