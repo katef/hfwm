@@ -7,4 +7,6 @@ hc() {
 }
 
 hc hello
+hc spawn xterm
+
 
