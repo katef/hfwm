@@ -201,11 +201,6 @@ main(void)
 	XGrabButton(display, 1, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 	XGrabButton(display, 3, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
-	if (!XFlush(display)) {
-		perror("XFlush");
-		return 1;
-	}
-
 	r = system(HFWM_STARTUP);
 	if (r == -1 || r != 0) {
 		perror(HFWM_STARTUP);
@@ -221,6 +216,11 @@ main(void)
 		FD_ZERO(&fds);
 		FD_SET(x11, &fds); max = MAX(max, x11);
 		FD_SET(ipc, &fds); max = MAX(max, ipc);
+
+		if (!XFlush(display)) {
+			perror("XFlush");
+			return 1;
+		}
 
 		r = select(max + 1, &fds, 0, 0, NULL);
 		if (r == -1) {
