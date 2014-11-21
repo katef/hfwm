@@ -28,6 +28,10 @@ Window root;
 #define IPC_PATH "/tmp/hfwm.sock"
 #endif
 
+#ifndef HFWM_STARTUP
+#define HFWM_STARTUP "startup.sh"
+#endif
+
 static int
 ipc_listen(const char *path)
 {
@@ -36,6 +40,11 @@ ipc_listen(const char *path)
 	int s;
 
 	assert(path != NULL);
+
+	if (strlen(path) + 1 > sizeof sun.sun_path) {
+		perror("IPC path too long");
+		exit(1);
+	}
 
 	s = socket(AF_LOCAL, SOCK_DGRAM, 0);
 	if (s == -1) {
@@ -58,6 +67,14 @@ ipc_listen(const char *path)
 	}
 
 	return s;
+}
+
+void
+dispatch_command(const char *cmd)
+{
+	fprintf(stderr, "dispatch command: %s\n", cmd);
+
+	/* TODO: strip whitespace; lex as argv etc */
 }
 
 void
@@ -106,24 +123,32 @@ event_x11(void)
 static void
 event_ipc(int s)
 {
-	struct sockaddr_storage ss;
-	socklen_t len;
 	char buf[1024]; /* XXX: BUFSZ? */
+	ssize_t r;
 
 	assert(s != -1);
 
-	if (-1 == recvfrom(s, buf, sizeof buf, 0, (struct sockaddr *) &ss, &len)) {
+	r = recvfrom(s, buf, sizeof buf, 0, NULL, 0);
+	if (-1 == r) {
 		perror("recvfrom");
 		exit(1);
 	}
 
-	fprintf(stderr, "recv ipc: %s\n", buf);
+	if (r == sizeof buf) {
+		fprintf(stderr, "IPC overflow: %s\n", buf);
+		return;
+	}
+
+	buf[r] = '\0';
+
+	dispatch_command(buf);
 }
 
 int
 main(void)
 {
 	int x11, ipc;
+	int r;
 
 	display = XOpenDisplay(NULL);
 	if (display == NULL) {
@@ -144,6 +169,12 @@ main(void)
 
 	if (!XFlush(display)) {
 		perror("XFlush");
+		return 1;
+	}
+
+	r = system(HFWM_STARTUP);
+	if (r == -1 || r != 0) {
+		perror(HFWM_STARTUP);
 		return 1;
 	}
 
