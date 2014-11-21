@@ -4,5 +4,11 @@
 int
 args(const char *src, char *dst, char *argv[], int count);
 
+int
+args_count(char *argv[]);
+
+char **
+args_clone(char *argv[]);
+
 #endif
 

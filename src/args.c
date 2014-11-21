@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 700
+
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -87,7 +89,6 @@ unescapec(const char *s, size_t *n)
 		/* TODO: handle error */
 		return '\0';
 	}
-
 }
 
 static int
@@ -268,6 +269,59 @@ args(const char *src, char *dst, char *argv[], int count)
 	}
 
 	return argc;
+}
+
+int
+args_count(char *argv[])
+{
+	int i;
+
+	assert(argv != NULL);
+
+	for (i = 0; argv[i] != NULL; i++)
+		;
+
+	return i;
+}
+
+char **
+args_clone(char *argv[])
+{
+	char **new;
+	int i, n;
+
+	assert(argv != NULL);
+
+	n = args_count(argv);
+
+	new = malloc((n + 1) * sizeof *new);
+	if (new == NULL) {
+		return NULL;
+	}
+
+	for (i = 0; i < n; i++) {
+		new[i] = strdup(argv[i]);
+	}
+
+	for (i = 0; i < n; i++) {
+		if (new[i] == NULL) {
+			goto error;
+		}
+	}
+
+	new[i] = NULL;
+
+	return new;
+
+error:
+
+	for (i = 0; i < n; i++) {
+		free(new[i]);
+	}
+
+	free(argv);
+
+	return NULL;
 }
 
 
