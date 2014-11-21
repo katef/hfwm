@@ -15,6 +15,9 @@
 
 #include <X11/Xlib.h>
 
+#include "args.h"
+#include "cmd.h"
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 Display *display;
@@ -70,11 +73,46 @@ ipc_listen(const char *path)
 }
 
 void
-dispatch_command(const char *cmd)
+dispatch_command(const char *s)
 {
-	fprintf(stderr, "dispatch command: %s\n", cmd);
+	const char *e;
+	size_t i;
 
-	/* TODO: strip whitespace; lex as argv etc */
+	struct {
+		const char *cmd;
+		int (*f)(char *[]);
+	} a[] = {
+		{ "spawn", cmd_spawn }
+	};
+
+	assert(s != NULL);
+
+	s += strspn(s, " \t\v\f\r\n");
+
+	e = s + strcspn(s, " \t\v\f\r\n");
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (e - s != strlen(a[i].cmd)) {
+			continue;
+		}
+
+		if (0 == memcmp(s, a[i].cmd, e - s)) {
+			char buf[1024];
+			char *argv[64];
+
+			/* TODO: produce argv[] etc */
+			if (-1 == args(e, buf, argv, sizeof argv / sizeof *argv)) {
+				perror(e);
+				exit(1);
+			}
+
+			if (-1 == a[i].f(argv)) {
+				perror(e);
+			}
+
+			return;
+		}
+	}
 }
 
 void
