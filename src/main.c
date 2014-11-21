@@ -18,6 +18,8 @@
 #include "main.h"
 #include "args.h"
 #include "cmd.h"
+#include "key.h"
+#include "button.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -69,66 +71,6 @@ ipc_listen(const char *path)
 	return s;
 }
 
-void
-dispatch_command(const char *s)
-{
-	const char *e;
-	size_t i;
-
-	struct {
-		const char *cmd;
-		int (*f)(char *[]);
-	} a[] = {
-		{ "keybind",   cmd_keybind   },
-		{ "mousebind", cmd_mousebind },
-		{ "spawn",     cmd_spawn     }
-	};
-
-	assert(s != NULL);
-
-	s = s + strspn (s, " \t\v\f\r\n");
-	e = s + strcspn(s, " \t\v\f\r\n");
-
-	for (i = 0; i < sizeof a / sizeof *a; i++) {
-		if (e - s != strlen(a[i].cmd)) {
-			continue;
-		}
-
-		if (0 == memcmp(s, a[i].cmd, e - s)) {
-			char buf[1024];
-			char *argv[64];
-
-			/* TODO: produce argv[] etc */
-			if (-1 == args(e, buf, argv, sizeof argv / sizeof *argv)) {
-				perror(e);
-				exit(1);
-			}
-
-			if (-1 == a[i].f(argv)) {
-				perror(e);
-			}
-
-			return;
-		}
-	}
-}
-
-void
-dispatch_button(const XEvent *e)
-{
-	assert(e->type == ButtonPress || e->type == ButtonRelease);
-
-	fprintf(stderr, "button %d/%d\n", e->xbutton.state, e->xbutton.button);
-}
-
-void
-dispatch_key(const XEvent *e)
-{
-	assert(e->type == KeyPress);
-
-	fprintf(stderr, "keycode %d/%d\n", e->xkey.state, e->xkey.keycode);
-}
-
 static void
 event_x11(void)
 {
@@ -148,9 +90,18 @@ event_x11(void)
 		}
 
 		switch (e.type) {
-		case KeyPress:      dispatch_key(&e);    break;
-		case ButtonPress:   dispatch_button(&e); break;
-		case ButtonRelease: dispatch_button(&e); break;
+		case KeyPress:
+			if (-1 == key_dispatch(e.xkey.keycode, e.xkey.state)) {
+				perror("key_dispatch");
+			}
+			break;
+
+		case ButtonPress:
+		case ButtonRelease:
+			if (-1 == button_dispatch(e.xbutton.button, e.xbutton.state)) {
+				perror("button_dispatch");
+			}
+			break;
 
 		default:
 			fprintf(stderr, "unhandled event %d\n", e.type);
@@ -162,7 +113,8 @@ event_x11(void)
 static void
 event_ipc(int s)
 {
-	char buf[1024]; /* XXX: BUFSZ? */
+	char buf[1024], hack[1024]; /* XXX: BUFSZ? */
+	char *argv[64]; /* XXX: argc size? */
 	ssize_t r;
 
 	assert(s != -1);
@@ -180,7 +132,15 @@ event_ipc(int s)
 
 	buf[r] = '\0';
 
-	dispatch_command(buf);
+	/* XXX: args() segfaults writing back to buf. why? */
+	if (-1 == args(buf, hack, argv, sizeof argv / sizeof *argv)) {
+		perror(buf);
+		exit(1);
+	}
+
+	if (-1 == cmd_dispatch(argv)) {
+		perror(argv[0]);
+	}
 }
 
 int
