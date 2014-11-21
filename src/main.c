@@ -1,7 +1,14 @@
+#define _XOPEN_SOURCE 700
+
 #include <sys/types.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+#include <unistd.h>
 
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -13,7 +20,45 @@
 Display *display;
 Window root;
 
-unsigned int mod = Mod4Mask;
+#ifndef MOD
+#define MOD Mod4Mask
+#endif
+
+#ifndef IPC_PATH
+#define IPC_PATH "/tmp/hfwm.sock"
+#endif
+
+static int
+ipc_listen(const char *path)
+{
+	struct sockaddr_un sun;
+	socklen_t len;
+	int s;
+
+	assert(path != NULL);
+
+	s = socket(AF_LOCAL, SOCK_DGRAM, 0);
+	if (s == -1) {
+		perror("socket");
+		return 1;
+	}
+
+	sun.sun_family = AF_LOCAL;
+	strcpy(sun.sun_path, path);
+
+	if (-1 == unlink(sun.sun_path) && errno != ENOENT) {
+		perror(sun.sun_path);
+		return 1;
+	}
+
+	len = sizeof sun.sun_family + strlen(sun.sun_path);
+	if (-1 == bind(s, (struct sockaddr *) &sun, len)) {
+		perror(sun.sun_path);
+		return 1;
+	}
+
+	return s;
+}
 
 void
 dispatch_mouse(const XEvent *e)
@@ -58,10 +103,27 @@ event_x11(void)
 	}
 }
 
+static void
+event_ipc(int s)
+{
+	struct sockaddr_storage ss;
+	socklen_t len;
+	char buf[1024]; /* XXX: BUFSZ? */
+
+	assert(s != -1);
+
+	if (-1 == recvfrom(s, buf, sizeof buf, 0, (struct sockaddr *) &ss, &len)) {
+		perror("recvfrom");
+		exit(1);
+	}
+
+	fprintf(stderr, "recv ipc: %s\n", buf);
+}
+
 int
 main(void)
 {
-	int x11;
+	int x11, ipc;
 
 	display = XOpenDisplay(NULL);
 	if (display == NULL) {
@@ -70,14 +132,15 @@ main(void)
 	}
 
 	x11 = ConnectionNumber(display);
-	/* ipc = TODO: text protocol socket */
+	ipc = ipc_listen(IPC_PATH);
 
 	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
-	XGrabKey(display, XKeysymToKeycode(display, XStringToKeysym("a")), mod, root, True, GrabModeAsync, GrabModeAsync);
+	/* TODO: all these come over IPC */
+	XGrabKey(display, XKeysymToKeycode(display, XStringToKeysym("a")), MOD, root, True, GrabModeAsync, GrabModeAsync);
 
-	XGrabButton(display, 1, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-	XGrabButton(display, 3, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+	XGrabButton(display, 1, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+	XGrabButton(display, 3, MOD, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
 	if (!XFlush(display)) {
 		perror("XFlush");
@@ -92,6 +155,7 @@ main(void)
 		max = 0;
 		FD_ZERO(&fds);
 		FD_SET(x11, &fds); max = MAX(max, x11);
+		FD_SET(ipc, &fds); max = MAX(max, ipc);
 
 		r = select(max + 1, &fds, 0, 0, NULL);
 		if (r == -1) {
@@ -105,6 +169,10 @@ main(void)
 
 		if (FD_ISSET(x11, &fds)) {
 			event_x11();
+		}
+
+		if (FD_ISSET(ipc, &fds)) {
+			event_ipc(ipc);
 		}
 	}
 
