@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "button.h"
+#include "args.h"
 #include "cmd.h"
 
 struct button {
@@ -50,10 +51,13 @@ button_add(struct button **head, int button, int mod, char *argv[])
 		return -1;
 	}
 
-/* TODO: duplicate argv */
+	argv = args_clone(argv);
+	if (argv == NULL) {
+		return -1;
+	}
 
-	new->mod    = mod;
-	new->argv   = argv;
+	new->mod  = mod;
+	new->argv = argv;
 
 	new->next = *head;
 	*head = new;

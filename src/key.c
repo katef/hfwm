@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "key.h"
+#include "args.h"
 #include "cmd.h"
+#include "key.h"
 
 struct key {
 	unsigned int keycode;
@@ -46,7 +47,10 @@ key_add(struct key **head, unsigned int keycode, int mod, char *argv[])
 		return -1;
 	}
 
-/* TODO: duplicate argv */
+	argv = args_clone(argv);
+	if (argv == NULL) {
+		goto error;
+	}
 
 	new->keycode = keycode;
 	new->mod     = mod;
@@ -56,6 +60,12 @@ key_add(struct key **head, unsigned int keycode, int mod, char *argv[])
 	*head     = new;
 
 	return 0;
+
+error:
+
+	free(new);
+
+	return -1;
 }
 
 int
