@@ -11,6 +11,7 @@
 
 #include "cmd.h"
 #include "main.h"
+#include "frame.h"
 #include "button.h"
 #include "key.h"
 
@@ -100,6 +101,26 @@ cmd_mousebind(char *argv[])
 	return 0;
 }
 
+static int
+cmd_append(char *argv[])
+{
+	if (!frame_append(&current_frame)) {
+		return -1;
+	}
+
+	return 0;
+}
+
+static int
+cmd_prepend(char *argv[])
+{
+	if (!frame_prepend(&current_frame)) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int
 cmd_dispatch(char *argv[])
 {
@@ -111,7 +132,9 @@ cmd_dispatch(char *argv[])
 	} a[] = {
 		{ "keybind",   cmd_keybind   },
 		{ "mousebind", cmd_mousebind },
-		{ "spawn",     cmd_spawn     }
+		{ "spawn",     cmd_spawn     },
+		{ "append",    cmd_append    },
+		{ "prepend",   cmd_prepend   }
 	};
 
 	assert(argv != NULL);
