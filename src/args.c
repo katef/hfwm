@@ -319,7 +319,7 @@ error:
 		free(new[i]);
 	}
 
-	free(argv);
+	free(new);
 
 	return NULL;
 }
