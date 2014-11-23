@@ -1,7 +1,31 @@
 #include <assert.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "layout.h"
+
+enum layout
+layout_lookup(const char *s)
+{
+	size_t i;
+
+	struct {
+		const char *name;
+		enum layout layout;
+	} a[] = {
+		{ "horiz", LAYOUT_HORIZ },
+		{ "vert",  LAYOUT_VERT  },
+		{ "max",   LAYOUT_MAX   }
+	};
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (0 == strcmp(a[i].name, s)) {
+			return a[i].layout;
+		}
+	}
+
+	return -1;
+}
 
 void
 layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old)

@@ -19,6 +19,9 @@ struct geom {
 	unsigned h;
 };
 
+enum layout
+layout_lookup(const char *name);
+
 void
 layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old);
 
