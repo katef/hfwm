@@ -24,4 +24,5 @@ hc keybind q prepend
 hc keybind w append
 hc keybind e sibling +1
 hc keybind r sibling -1
+hc keybind t layout -f +1
 

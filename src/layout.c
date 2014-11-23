@@ -27,6 +27,12 @@ layout_lookup(const char *s)
 	return -1;
 }
 
+enum layout
+layout_cycle(enum layout l, int delta)
+{
+	return (l + delta) % (LAYOUT_COUNT + 1);
+}
+
 void
 layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old)
 {

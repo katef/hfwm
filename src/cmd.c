@@ -17,6 +17,61 @@
 #include "key.h"
 
 static int
+delta(const char *s)
+{
+	size_t i;
+	long l;
+
+	struct {
+		const char *name;
+		int n;
+	} a[] = {
+		{ "first", INT_MIN },
+		{ "last",  INT_MAX },
+		{ "next",       +1 },
+		{ "prev",       -1 }
+	};
+
+	if (s == NULL) {
+		return +1;
+	}
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (0 == strcmp(s, a[i].name)) {
+			return a[i].n;
+		}
+	}
+
+	{
+		char *e;
+
+		errno = 0;
+
+		l = strtol(s, &e, 0);
+		if (*s == '\0' || *e != '\0') {
+			errno = EINVAL;
+			return 0;
+		}
+
+		if ((l == LONG_MIN || l == LONG_MAX) && errno != 0) {
+			return 0;
+		}
+
+		if (l <= INT_MIN || l >= INT_MAX) {
+			errno = ERANGE;
+			return 0;
+		}
+
+		if (l == 0) {
+			errno = EINVAL;
+			return 0;
+		}
+	}
+
+	return (int) l;
+}
+
+static int
 cmd_spawn(char *argv[])
 {
 	int r;
@@ -136,20 +191,53 @@ static int
 cmd_sibling(char *argv[])
 {
 	struct frame *new;
-	int delta;
+	int d;
 
-	if (argv[0] == NULL) {
-		delta = +1;
-	} else {
-		delta = atoi(argv[0]); /* TODO: error checking */
+	/* TODO: -f -w for frame/window siblings */
+
+	d = delta(argv[0]);
+	if (d == 0) {
+		return -1;
 	}
 
-	new = frame_sibling(current_frame, delta);
+	new = frame_sibling(current_frame, d);
 	if (new == NULL) {
 		return -1;
 	}
 
 	current_frame = new;
+
+	return 0;
+}
+
+static int
+cmd_layout(char *argv[])
+{
+	enum layout *curr, l;
+	int d;
+
+	if (0 == strcmp(argv[0], "-f")) {
+		curr = &current_frame->frame_layout;
+	} else if (0 == strcmp(argv[0], "-w")) {
+		curr = &current_frame->window_layout;
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
+
+	l = layout_lookup(argv[1]);
+	if (l == -1) {
+		d = delta(argv[1]);
+		if (d == 0) {
+			return -1;
+		}
+
+		l = layout_cycle(*curr, d);
+	}
+
+	*curr = l;
+
+	/* TODO: redraw frame */
 
 	return 0;
 }
@@ -168,7 +256,8 @@ cmd_dispatch(char *argv[])
 		{ "spawn",     cmd_spawn     },
 		{ "prepend",   cmd_prepend   },
 		{ "append",    cmd_append    },
-		{ "sibling",   cmd_sibling   }
+		{ "sibling",   cmd_sibling   },
+		{ "layout",    cmd_layout    }
 	};
 
 	assert(argv != NULL);
