@@ -9,10 +9,7 @@ struct frame *
 frame_create(void);
 
 struct frame *
-frame_prepend(struct frame **head);
-
-struct frame *
-frame_append(struct frame **head);
+frame_split(struct frame *old, enum order order);
 
 #endif
 

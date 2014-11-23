@@ -7,6 +7,11 @@ enum layout {
 	LAYOUT_MAX
 };
 
+enum order {
+	ORDER_PREV,
+	ORDER_NEXT
+};
+
 struct geom {
 	unsigned x;
 	unsigned y;
@@ -15,7 +20,7 @@ struct geom {
 };
 
 void
-layout_split(enum layout layout, struct geom *new, struct geom *old);
+layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old);
 
 #endif
 

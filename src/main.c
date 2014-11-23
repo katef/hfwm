@@ -18,8 +18,9 @@
 #include "main.h"
 #include "args.h"
 #include "cmd.h"
-#include "frame.h"
+#include "layout.h"
 #include "button.h"
+#include "frame.h"
 #include "key.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

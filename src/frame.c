@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 #include <X11/Xlib.h>
 
@@ -15,18 +17,20 @@ struct window {
 };
 
 struct frame {
-	struct frame *next;   /* list of sibling frames */
-	struct frame *child;  /* list of zero or more children by .next */
-	struct frame *parent; /* pointer up */
+	struct frame *prev;     /* list of sibling frames */
+	struct frame *next;     /* list of sibling frames */
+	struct frame *parent;   /* pointer up */
+	struct frame *children; /* list of zero or more children by .prev/.next */
 
 	struct window *windows; /* list of windows in this frame */
 
-	enum layout frame_layout;  /* layout for .child list */
+	enum layout frame_layout;  /* layout for .children list */
 	enum layout window_layout; /* layout for .window list */
 
 	struct geom geom;
 };
 
+/* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
 
 extern Display *display; /* XXX */
@@ -71,6 +75,16 @@ frame_create(void)
 		return NULL;
 	}
 
+	if (x < 0 || y < 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if (w == 0 || h == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	new = malloc(sizeof *new);
 	if (new == NULL) {
 		return NULL;
@@ -79,11 +93,12 @@ frame_create(void)
 	new->frame_layout  = default_frame_layout;
 	new->window_layout = default_window_layout;
 
-	new->windows = NULL;
+	new->windows  = NULL;
 
-	new->next   = NULL;
-	new->child  = NULL;
-	new->parent = NULL;
+	new->prev     = NULL;
+	new->next     = NULL;
+	new->parent   = NULL;
+	new->children = NULL;
 
 	new->geom.x = x;
 	new->geom.y = y;
@@ -93,15 +108,12 @@ frame_create(void)
 	return new;
 }
 
-static struct frame *
-frame_split(struct frame **p)
+struct frame *
+frame_split(struct frame *old, enum order order)
 {
-	struct frame *old, *new;
+	struct frame *new;
 
-	assert(p != NULL);
-	assert(*p != NULL);
-
-	old = *p;
+	assert(old != NULL);
 
 	new = malloc(sizeof *new);
 	if (new == NULL) {
@@ -113,44 +125,30 @@ frame_split(struct frame **p)
 
 	new->windows = NULL;
 
-	new->child  = NULL;
-	new->parent = old->parent;
+	new->parent   = old->parent;
+	new->children = NULL;
 
-	layout_split(new->frame_layout, &new->geom, &old->geom);
+	layout_split(new->frame_layout, order, &new->geom, &old->geom);
 
 rectangle(XFillRectangle, &old->geom, "#556666");
 rectangle(XDrawRectangle, &old->geom, "#222222");
 rectangle(XFillRectangle, &new->geom, "#555566");
 rectangle(XDrawRectangle, &new->geom, "#222222");
 
-	new->next = *p;
-	*p = new;
+	switch (order) {
+	case ORDER_NEXT:
+		new->next = old->next;
+		old->next = new;
+		new->prev = old;
+		break;
 
-	current_frame = old;
+	case ORDER_PREV:
+		new->prev = old->prev;
+		old->prev = new;
+		new->next = old;
+		break;
+	}
 
 	return new;
-}
-
-struct frame *
-frame_prepend(struct frame **head)
-{
-	assert(head != NULL);
-	assert(*head != NULL);
-
-	return frame_split(head);
-}
-
-struct frame *
-frame_append(struct frame **head)
-{
-	struct frame **p;
-
-	assert(head != NULL);
-	assert(*head != NULL);
-
-	for (p = head; (*p)->next != NULL; p = &(*p)->next)
-		;
-
-	return frame_split(p);
 }
 

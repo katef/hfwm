@@ -11,8 +11,9 @@
 
 #include "cmd.h"
 #include "main.h"
-#include "frame.h"
 #include "button.h"
+#include "layout.h"
+#include "frame.h"
 #include "key.h"
 
 static int
@@ -102,21 +103,31 @@ cmd_mousebind(char *argv[])
 }
 
 static int
-cmd_append(char *argv[])
+cmd_prepend(char *argv[])
 {
-	if (!frame_append(&current_frame)) {
+	struct frame *new;
+
+	new = frame_split(current_frame, ORDER_PREV);
+	if (new == NULL) {
 		return -1;
 	}
+
+	current_frame = new;
 
 	return 0;
 }
 
 static int
-cmd_prepend(char *argv[])
+cmd_append(char *argv[])
 {
-	if (!frame_prepend(&current_frame)) {
+	struct frame *new;
+
+	new = frame_split(current_frame, ORDER_NEXT);
+	if (new == NULL) {
 		return -1;
 	}
+
+	current_frame = new;
 
 	return 0;
 }
@@ -133,8 +144,8 @@ cmd_dispatch(char *argv[])
 		{ "keybind",   cmd_keybind   },
 		{ "mousebind", cmd_mousebind },
 		{ "spawn",     cmd_spawn     },
-		{ "append",    cmd_append    },
-		{ "prepend",   cmd_prepend   }
+		{ "prepend",   cmd_prepend   },
+		{ "append",    cmd_append    }
 	};
 
 	assert(argv != NULL);
