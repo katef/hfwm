@@ -18,8 +18,9 @@
 #include "main.h"
 #include "args.h"
 #include "cmd.h"
-#include "key.h"
+#include "frame.h"
 #include "button.h"
+#include "key.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -159,6 +160,12 @@ main(void)
 	ipc = ipc_listen(IPC_PATH);
 
 	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
+
+	current_frame = frame_create();
+	if (current_frame == NULL) {
+		perror("frame_create");
+		return 1;
+	}
 
 	r = system(HFWM_STARTUP);
 	if (r == -1 || r != 0) {

@@ -12,6 +12,9 @@ struct frame;
 extern struct frame *current_frame;
 
 struct frame *
+frame_create(void);
+
+struct frame *
 frame_prepend(struct frame **head);
 
 struct frame *

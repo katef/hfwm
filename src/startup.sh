@@ -14,8 +14,13 @@ randcol() {
 }
 
 hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
+hc keybind b spawn randbg # script for same as above
 
 hc keybind a spawn xterm
 hc mousebind 1 spawn xterm
 hc mousebind 3 spawn xterm
+
+hc keybind q prepend
+hc keybind w append
+
 
