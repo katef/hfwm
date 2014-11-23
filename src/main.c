@@ -21,6 +21,7 @@
 #include "layout.h"
 #include "button.h"
 #include "frame.h"
+#include "spawn.h"
 #include "key.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -149,7 +150,6 @@ int
 main(void)
 {
 	int x11, ipc;
-	int r;
 
 	display = XOpenDisplay(NULL);
 	if (display == NULL) {
@@ -168,10 +168,13 @@ main(void)
 		return 1;
 	}
 
-	r = system(HFWM_STARTUP);
-	if (r == -1 || r != 0) {
-		perror(HFWM_STARTUP);
-		return 1;
+	{
+		char *argv[] = { HFWM_STARTUP, NULL };
+
+		if (-1 == spawn(argv)) {
+			perror(argv[0]);
+			return -1;
+		}
 	}
 
 	for (;;) {

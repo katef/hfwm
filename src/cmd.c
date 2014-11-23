@@ -14,6 +14,7 @@
 #include "button.h"
 #include "layout.h"
 #include "frame.h"
+#include "spawn.h"
 #include "key.h"
 
 static enum rel
@@ -100,24 +101,14 @@ delta(const char *s)
 static int
 cmd_spawn(char *argv[])
 {
-	int r;
+	/* TODO: getopt -d to detach child */
 
-	r = fork();
-	if (r == -1) {
+	if (-1 == spawn(argv)) {
+		perror(argv[0]);
 		return -1;
 	}
 
-	if (r != 0) {
-		return 0;
-	}
-
-	/* TODO: getopt -d to detach child */
-
-	if (-1 == execvp(argv[0], argv)) {
-		perror(argv[0]);
-	}
-
-	exit(1);
+	return 0;
 }
 
 static int
