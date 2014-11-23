@@ -16,6 +16,32 @@
 #include "frame.h"
 #include "key.h"
 
+static enum rel
+rel_lookup(const char *s)
+{
+	size_t i;
+
+	struct {
+		const char *name;
+		enum rel rel;
+	} a[] = {
+		{ "-s", REL_SIBLING },
+		{ "-l", REL_LINEAGE }
+	};
+
+	if (s == NULL) {
+		return REL_SIBLING;
+	}
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (0 == strcmp(s, a[i].name)) {
+			return a[i].rel;
+		}
+	}
+
+	return -1;
+}
+
 static int
 delta(const char *s)
 {
@@ -161,8 +187,17 @@ static int
 cmd_prepend(char *argv[])
 {
 	struct frame *new;
+	enum layout layout;
 
-	new = frame_split(current_frame, ORDER_PREV);
+	assert(current_frame != NULL);
+
+	if (current_frame->parent == NULL) {
+		layout = LAYOUT_MAX;
+	} else {
+		layout = current_frame->frame_layout;
+	}
+
+	new = frame_split(current_frame, layout, ORDER_PREV);
 	if (new == NULL) {
 		return -1;
 	}
@@ -176,8 +211,17 @@ static int
 cmd_append(char *argv[])
 {
 	struct frame *new;
+	enum layout l;
 
-	new = frame_split(current_frame, ORDER_NEXT);
+	assert(current_frame != NULL);
+
+	if (current_frame->parent == NULL) {
+		l = LAYOUT_MAX;
+	} else {
+		l = current_frame->frame_layout;
+	}
+
+	new = frame_split(current_frame, l, ORDER_NEXT);
 	if (new == NULL) {
 		return -1;
 	}
@@ -188,19 +232,25 @@ cmd_append(char *argv[])
 }
 
 static int
-cmd_sibling(char *argv[])
+cmd_focus(char *argv[])
 {
 	struct frame *new;
+	enum rel rel;
 	int d;
 
 	/* TODO: -f -w for frame/window siblings */
 
-	d = delta(argv[0]);
+	rel = rel_lookup(argv[0]);
+	if (rel == -1) {
+		return -1;
+	}
+
+	d = delta(argv[1]);
 	if (d == 0) {
 		return -1;
 	}
 
-	new = frame_sibling(current_frame, d);
+	new = frame_focus(current_frame, rel, d);
 	if (new == NULL) {
 		return -1;
 	}
@@ -256,7 +306,7 @@ cmd_dispatch(char *argv[])
 		{ "spawn",     cmd_spawn     },
 		{ "prepend",   cmd_prepend   },
 		{ "append",    cmd_append    },
-		{ "sibling",   cmd_sibling   },
+		{ "focus",     cmd_focus     },
 		{ "layout",    cmd_layout    }
 	};
 

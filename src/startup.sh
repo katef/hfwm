@@ -22,7 +22,9 @@ hc mousebind 3 spawn xterm
 
 hc keybind q prepend
 hc keybind w append
-hc keybind e sibling +1
-hc keybind r sibling -1
-hc keybind t layout -f +1
+hc keybind e focus -s +1
+hc keybind r focus -s -1
+hc keybind t focus -l +1
+hc keybind y focus -l -1
+hc keybind l layout -f +1
 

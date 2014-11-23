@@ -95,7 +95,7 @@ frame_create(void)
 }
 
 struct frame *
-frame_split(struct frame *old, enum order order)
+frame_split(struct frame *old, enum layout layout, enum order order)
 {
 	struct frame *new;
 
@@ -114,7 +114,7 @@ frame_split(struct frame *old, enum order order)
 	new->parent   = old->parent;
 	new->children = NULL;
 
-	layout_split(new->frame_layout, order, &new->geom, &old->geom);
+	layout_split(layout, order, &new->geom, &old->geom);
 
 rectangle(XFillRectangle, &old->geom, "#556666");
 rectangle(XDrawRectangle, &old->geom, "#222222");
@@ -139,23 +139,20 @@ rectangle(XDrawRectangle, &new->geom, "#222222");
 }
 
 struct frame *
-frame_sibling(struct frame *curr, int delta)
+frame_focus(struct frame *curr, enum rel rel, int delta)
 {
 	struct frame *next;
 	int i;
 
 	assert(curr != NULL);
 
-	if (delta == 0) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-rectangle(XFillRectangle, &curr->geom, "#161615");
-rectangle(XDrawRectangle, &curr->geom, "#121212");
+rectangle(XDrawRectangle, &curr->geom, "#662222");
 
 	for (i = 0; i < abs(delta); i++) {
-		next = delta > 0 ? curr->next : curr->prev;
+		switch (rel) {
+		case REL_SIBLING: next = delta > 0 ? curr->next     : curr->prev;   break;
+		case REL_LINEAGE: next = delta > 0 ? curr->children : curr->parent; break;
+		}
 
 		if (next == NULL) {
 			return NULL;
@@ -164,7 +161,6 @@ rectangle(XDrawRectangle, &curr->geom, "#121212");
 		curr = next;
 	}
 
-rectangle(XFillRectangle, &curr->geom, "#665555");
 rectangle(XDrawRectangle, &curr->geom, "#222222");
 
 	return curr;

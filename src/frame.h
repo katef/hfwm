@@ -4,6 +4,11 @@
 struct window;
 struct geom;
 
+enum rel {
+	REL_SIBLING,
+	REL_LINEAGE
+};
+
 struct frame {
 	struct frame *prev;     /* list of sibling frames */
 	struct frame *next;     /* list of sibling frames */
@@ -24,10 +29,10 @@ struct frame *
 frame_create(void);
 
 struct frame *
-frame_split(struct frame *old, enum order order);
+frame_split(struct frame *old, enum layout layout, enum order order);
 
 struct frame *
-frame_sibling(struct frame *curr, int delta);
+frame_focus(struct frame *curr, enum rel rel, int delta);
 
 #endif
 
