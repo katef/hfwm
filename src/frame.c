@@ -8,27 +8,13 @@
 #include "layout.h"
 #include "frame.h"
 
-enum layout default_frame_layout  = LAYOUT_HORIZ; /* TODO: configurable default */
-enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default */
-
 struct window {
 	/* TODO: placeholder */
 	struct window *next;
 };
 
-struct frame {
-	struct frame *prev;     /* list of sibling frames */
-	struct frame *next;     /* list of sibling frames */
-	struct frame *parent;   /* pointer up */
-	struct frame *children; /* list of zero or more children by .prev/.next */
-
-	struct window *windows; /* list of windows in this frame */
-
-	enum layout frame_layout;  /* layout for .children list */
-	enum layout window_layout; /* layout for .window list */
-
-	struct geom geom;
-};
+enum layout default_frame_layout  = LAYOUT_HORIZ; /* TODO: configurable default */
+enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default */
 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
