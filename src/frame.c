@@ -123,8 +123,8 @@ rectangle(XDrawRectangle, &old->geom, "#222222");
 rectangle(XFillRectangle, &new->geom, "#555566");
 rectangle(XDrawRectangle, &new->geom, "#222222");
 
-	*p = new;
 	new->next = *p;
+	*p = new;
 
 	current_frame = old;
 
