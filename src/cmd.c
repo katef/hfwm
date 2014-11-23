@@ -132,6 +132,28 @@ cmd_append(char *argv[])
 	return 0;
 }
 
+static int
+cmd_sibling(char *argv[])
+{
+	struct frame *new;
+	int delta;
+
+	if (argv[0] == NULL) {
+		delta = +1;
+	} else {
+		delta = atoi(argv[0]); /* TODO: error checking */
+	}
+
+	new = frame_sibling(current_frame, delta);
+	if (new == NULL) {
+		return -1;
+	}
+
+	current_frame = new;
+
+	return 0;
+}
+
 int
 cmd_dispatch(char *argv[])
 {
@@ -145,7 +167,8 @@ cmd_dispatch(char *argv[])
 		{ "mousebind", cmd_mousebind },
 		{ "spawn",     cmd_spawn     },
 		{ "prepend",   cmd_prepend   },
-		{ "append",    cmd_append    }
+		{ "append",    cmd_append    },
+		{ "sibling",   cmd_sibling   }
 	};
 
 	assert(argv != NULL);

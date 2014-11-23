@@ -152,3 +152,35 @@ rectangle(XDrawRectangle, &new->geom, "#222222");
 	return new;
 }
 
+struct frame *
+frame_sibling(struct frame *curr, int delta)
+{
+	struct frame *next;
+	int i;
+
+	assert(curr != NULL);
+
+	if (delta == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+rectangle(XFillRectangle, &curr->geom, "#161615");
+rectangle(XDrawRectangle, &curr->geom, "#121212");
+
+	for (i = 0; i < abs(delta); i++) {
+		next = delta > 0 ? curr->next : curr->prev;
+
+		if (next == NULL) {
+			return NULL;
+		}
+
+		curr = next;
+	}
+
+rectangle(XFillRectangle, &curr->geom, "#665555");
+rectangle(XDrawRectangle, &curr->geom, "#222222");
+
+	return curr;
+}
+
