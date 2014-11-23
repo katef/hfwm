@@ -2,7 +2,7 @@
 #define SPAWN_H
 
 int
-spawn(char *argv[]);
+spawn(char *const argv[]);
 
 #endif
 

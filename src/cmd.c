@@ -99,7 +99,7 @@ delta(const char *s)
 }
 
 static int
-cmd_spawn(char *argv[])
+cmd_spawn(char *const argv[])
 {
 	/* TODO: getopt -d to detach child */
 
@@ -112,7 +112,7 @@ cmd_spawn(char *argv[])
 }
 
 static int
-cmd_keybind(char *argv[])
+cmd_keybind(char *const argv[])
 {
 	int mod;
 	KeySym ks;
@@ -143,7 +143,7 @@ cmd_keybind(char *argv[])
 }
 
 static int
-cmd_mousebind(char *argv[])
+cmd_mousebind(char *const argv[])
 {
 	int mod;
 	int button;
@@ -175,7 +175,7 @@ cmd_mousebind(char *argv[])
 }
 
 static int
-cmd_prepend(char *argv[])
+cmd_prepend(char *const argv[])
 {
 	struct frame *new;
 	enum layout layout;
@@ -199,7 +199,7 @@ cmd_prepend(char *argv[])
 }
 
 static int
-cmd_append(char *argv[])
+cmd_append(char *const argv[])
 {
 	struct frame *new;
 	enum layout l;
@@ -223,7 +223,7 @@ cmd_append(char *argv[])
 }
 
 static int
-cmd_focus(char *argv[])
+cmd_focus(char *const argv[])
 {
 	struct frame *new;
 	enum rel rel;
@@ -252,7 +252,7 @@ cmd_focus(char *argv[])
 }
 
 static int
-cmd_layout(char *argv[])
+cmd_layout(char *const argv[])
 {
 	enum layout *curr, l;
 	int d;
@@ -284,13 +284,13 @@ cmd_layout(char *argv[])
 }
 
 int
-cmd_dispatch(char *argv[])
+cmd_dispatch(char *const argv[])
 {
 	size_t i;
 
 	struct {
 		const char *cmd;
-		int (*f)(char *[]);
+		int (*f)(char *const []);
 	} a[] = {
 		{ "keybind",   cmd_keybind   },
 		{ "mousebind", cmd_mousebind },

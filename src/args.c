@@ -272,7 +272,7 @@ args(const char *src, char *dst, char *argv[], int count)
 }
 
 int
-args_count(char *argv[])
+args_count(char *const argv[])
 {
 	int i;
 
@@ -285,7 +285,7 @@ args_count(char *argv[])
 }
 
 char **
-args_clone(char *argv[])
+args_clone(char *const argv[])
 {
 	char **new;
 	int i, n;

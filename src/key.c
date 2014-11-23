@@ -9,7 +9,7 @@
 struct key {
 	unsigned int keycode;
 	int mod;
-	char **argv;
+	char *const *argv;
 	struct key *next;
 };
 
@@ -30,7 +30,7 @@ key_find(struct key *head, unsigned int keycode, int mod)
 }
 
 static int
-key_add(struct key **head, unsigned int keycode, int mod, char *argv[])
+key_add(struct key **head, unsigned int keycode, int mod, char *const argv[])
 {
 	struct key *new;
 
@@ -69,7 +69,7 @@ error:
 }
 
 int
-key_bind(unsigned int keycode, int mod, char *argv[])
+key_bind(unsigned int keycode, int mod, char *const argv[])
 {
 	assert(argv != NULL);
 

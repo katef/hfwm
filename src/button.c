@@ -8,7 +8,7 @@
 
 struct button {
 	int mod;
-	char **argv;
+	char *const *argv;
 	struct button *next;
 };
 
@@ -29,7 +29,7 @@ button_find(struct button *head, int button, int mod)
 }
 
 static int
-button_add(struct button **head, int button, int mod, char *argv[])
+button_add(struct button **head, int button, int mod, char *const argv[])
 {
 	struct button *new;
 
@@ -66,7 +66,7 @@ button_add(struct button **head, int button, int mod, char *argv[])
 }
 
 int
-button_bind(int button, int mod, char *argv[])
+button_bind(int button, int mod, char *const argv[])
 {
 	if (button < 0 || button > sizeof buttons / sizeof *buttons) {
 		errno = EINVAL;

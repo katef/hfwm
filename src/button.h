@@ -6,7 +6,7 @@
 #endif
 
 int
-button_bind(int button, int mod, char *argv[]);
+button_bind(int button, int mod, char *const argv[]);
 
 int
 button_dispatch(int button, int mod);

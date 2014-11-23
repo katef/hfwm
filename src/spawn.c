@@ -7,7 +7,7 @@
 #include "spawn.h"
 
 int
-spawn(char *argv[])
+spawn(char *const argv[])
 {
 	int r;
 
