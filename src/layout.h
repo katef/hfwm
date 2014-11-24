@@ -9,11 +9,6 @@ enum layout {
 
 #define LAYOUT_COUNT 3
 
-enum order {
-	ORDER_PREV,
-	ORDER_NEXT
-};
-
 enum layout
 layout_lookup(const char *name);
 

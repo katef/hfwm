@@ -19,6 +19,7 @@
 #include "args.h"
 #include "cmd.h"
 #include "geom.h"
+#include "order.h"
 #include "layout.h"
 #include "button.h"
 #include "frame.h"

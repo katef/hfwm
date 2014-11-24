@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "geom.h"
+#include "order.h"
 #include "layout.h"
 
 enum layout
