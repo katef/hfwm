@@ -11,6 +11,7 @@
 
 #include "cmd.h"
 #include "main.h"
+#include "geom.h"
 #include "button.h"
 #include "layout.h"
 #include "frame.h"

@@ -5,6 +5,7 @@
 
 #include <X11/Xlib.h>
 
+#include "geom.h"
 #include "layout.h"
 #include "frame.h"
 

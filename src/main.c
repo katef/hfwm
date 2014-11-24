@@ -18,6 +18,7 @@
 #include "main.h"
 #include "args.h"
 #include "cmd.h"
+#include "geom.h"
 #include "layout.h"
 #include "button.h"
 #include "frame.h"

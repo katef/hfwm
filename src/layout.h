@@ -14,13 +14,6 @@ enum order {
 	ORDER_NEXT
 };
 
-struct geom {
-	unsigned x;
-	unsigned y;
-	unsigned w;
-	unsigned h;
-};
-
 enum layout
 layout_lookup(const char *name);
 
