@@ -152,6 +152,7 @@ int
 main(void)
 {
 	int x11, ipc;
+	struct geom g;
 
 	display = XOpenDisplay(NULL);
 	if (display == NULL) {
@@ -164,7 +165,12 @@ main(void)
 
 	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
-	current_frame = frame_create();
+	if (-1 == win_geom(root, &g)) {
+		perror("win_geom");
+		return 1;
+	}
+
+	current_frame = frame_create(&g);
 	if (current_frame == NULL) {
 		perror("frame_create");
 		return 1;

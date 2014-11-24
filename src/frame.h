@@ -26,7 +26,7 @@ struct frame {
 extern struct frame *current_frame;
 
 struct frame *
-frame_create(void);
+frame_create(const struct geom *g);
 
 struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order);

@@ -10,11 +10,7 @@
 #include "layout.h"
 #include "frame.h"
 #include "main.h"
-
-struct window {
-	/* TODO: placeholder */
-	struct window *next;
-};
+#include "win.h"
 
 enum layout default_frame_layout  = LAYOUT_HORIZ; /* TODO: configurable default */
 enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default */
@@ -22,54 +18,12 @@ enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
 
-/* XXX: debugging stuff; no error checking */
-static void
-rectangle(int (*f)(Display *, Drawable, GC, int, int, unsigned int, unsigned int),
-	struct geom *geom, const char *colour)
-{
-	Colormap cm;
-	XColor col;
-	GC gc;
-
-	assert(f != NULL);
-	assert(geom != NULL);
-	assert(colour != NULL);
-
-	cm = DefaultColormap(display, 0);
-
-	gc = XCreateGC(display, root, 0, 0);
-	XParseColor(display, cm, colour, &col);
-	XAllocColor(display, cm, &col);
-	XSetForeground(display, gc, col.pixel);
-
-	f(display, root, gc, geom->x, geom->y, geom->w, geom->h);
-
-	XFlush(display);
-}
-
 struct frame *
-frame_create(void)
+frame_create(const struct geom *g)
 {
 	struct frame *new;
-	int x, y;
-	unsigned int w, h;
-	Window rr;
-	unsigned int bw;
-	unsigned int depth;
 
-	if (!XGetGeometry(display, root, &rr, &x, &y, &w, &h, &bw, &depth)) {
-		return NULL;
-	}
-
-	if (x < 0 || y < 0) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-	if (w == 0 || h == 0) {
-		errno = EINVAL;
-		return NULL;
-	}
+	assert(g != NULL);
 
 	new = malloc(sizeof *new);
 	if (new == NULL) {
@@ -86,10 +40,7 @@ frame_create(void)
 	new->parent   = NULL;
 	new->children = NULL;
 
-	new->geom.x = x;
-	new->geom.y = y;
-	new->geom.w = w;
-	new->geom.h = h;
+	new->geom     = *g;
 
 	return new;
 }
