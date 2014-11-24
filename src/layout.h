@@ -1,6 +1,8 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
+struct geom;
+
 enum layout {
 	LAYOUT_HORIZ,
 	LAYOUT_VERT,
