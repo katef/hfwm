@@ -8,6 +8,7 @@
 #include "geom.h"
 #include "layout.h"
 #include "frame.h"
+#include "main.h"
 
 struct window {
 	/* TODO: placeholder */
@@ -19,9 +20,6 @@ enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default 
 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
-
-extern Display *display; /* XXX */
-extern Window root; /* XXX */
 
 /* XXX: debugging stuff; no error checking */
 static void
