@@ -85,15 +85,6 @@ event_x11(void)
 		int r;
 
 		r = XNextEvent(display, &e);
-		if (r != 0 && errno == EAGAIN) {
-			break;
-
-		}
-
-		if (r != 0) {
-			perror("XNextEvent");
-			exit(1);
-		}
 
 		switch (e.type) {
 		case KeyPress:
@@ -156,15 +147,10 @@ main(void)
 	struct geom g;
 
 	display = XOpenDisplay(NULL);
-	if (display == NULL) {
-		perror("XOpenDisplay");
-		return 1;
-	}
+	root    = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	x11 = ConnectionNumber(display);
 	ipc = ipc_listen(IPC_PATH);
-
-	root = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	if (-1 == win_geom(root, &g)) {
 		perror("win_geom");
@@ -196,10 +182,7 @@ main(void)
 		FD_SET(x11, &fds); max = MAX(max, x11);
 		FD_SET(ipc, &fds); max = MAX(max, ipc);
 
-		if (!XFlush(display)) {
-			perror("XFlush");
-			return 1;
-		}
+		XFlush(display);
 
 		r = select(max + 1, &fds, 0, 0, NULL);
 		if (r == -1) {

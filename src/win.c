@@ -28,7 +28,6 @@ win_create(const struct geom *geom, const char *name)
 	win_resize(win, geom);
 
 	XMapWindow(display, win);
-	XFlush(display);
 
 	return win;
 }

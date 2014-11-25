@@ -162,9 +162,7 @@ cmd_keybind(char *const argv[])
 		return -1;
 	}
 
-	if (!XGrabKey(display, kc, mod, root, True, GrabModeAsync, GrabModeAsync)) {
-		return -1;
-	}
+	XGrabKey(display, kc, mod, root, True, GrabModeAsync, GrabModeAsync);
 
 	if (-1 == key_bind(kc, mod, argv + 1)) {
 		return -1;
@@ -194,9 +192,7 @@ cmd_mousebind(char *const argv[])
 		return -1;
 	}
 
-	if (!XGrabButton(display, button, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None)) {
-		return -1;
-	}
+	XGrabButton(display, button, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
 	if (-1 == button_bind(button, mod, argv + 1)) {
 		return -1;
