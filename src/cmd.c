@@ -18,6 +18,7 @@
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
+#include "win.h"
 
 static enum rel
 rel_lookup(const char *s)
@@ -270,6 +271,11 @@ cmd_focus(char *const argv[])
 
 	/* TODO: -f -w for frame/window siblings */
 
+	/* TODO: setting for inactive colour */
+	if (current_frame->type == FRAME_LEAF) {
+		win_border(current_frame->win, "#222222");
+	}
+
 	rel = rel_lookup(argv[0]);
 	if (rel == -1) {
 		return -1;
@@ -285,8 +291,12 @@ cmd_focus(char *const argv[])
 		return -1;
 	}
 
-fprintf(stderr, "focus, current = %p\n", (void *) current_frame);
 	current_frame = new;
+
+	/* TODO: setting for active colour */
+	if (current_frame->type == FRAME_LEAF) {
+		win_border(current_frame->win, "#EE2222");
+	}
 
 	return 0;
 }

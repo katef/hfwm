@@ -22,6 +22,8 @@ struct frame {
 	enum layout layout;   /* layout for .u.children or .u.window list */
 	struct geom geom;
 
+	Window win; /* only for FRAME_LEAF */
+
 	enum frame_type type;
 	union {
 		struct frame *children; /* list of zero or more children by .prev/.next */
@@ -35,7 +37,7 @@ struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order);
 
 struct frame *
-frame_create_leaf(struct frame *parent, const struct geom *g,
+frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct window *windows);
 
 struct frame *

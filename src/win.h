@@ -3,15 +3,21 @@
 
 #include <X11/Xlib.h>
 
+#define WIN_BORDER 2
+
 struct window {
 	/* TODO: placeholder */
 	struct window *next;
 };
 
-/* XXX */
+Window
+win_create(const struct geom *geom, const char *name);
+
 void
-rectangle(int (*f)(Display *, Drawable, GC, int, int, unsigned int, unsigned int),
-	struct geom *geom, const char *colour);
+win_resize(Window win, const struct geom *geom);
+
+void
+win_border(Window win, const char *colour);
 
 int
 win_geom(Window win, struct geom *geom);

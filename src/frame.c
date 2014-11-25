@@ -44,10 +44,10 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 
 	layout_split(layout, order, &new->geom, &old->geom);
 
-rectangle(XFillRectangle, &old->geom, "#556666");
-rectangle(XDrawRectangle, &old->geom, "#222222");
-rectangle(XFillRectangle, &new->geom, "#555566");
-rectangle(XDrawRectangle, &new->geom, "#222222");
+	if (new->type == FRAME_LEAF) {
+		new->win = win_create(&new->geom, "hfwm");
+		win_resize(old->win, &new->geom);
+	}
 
 	switch (order) {
 	case ORDER_NEXT:
@@ -67,15 +67,21 @@ rectangle(XDrawRectangle, &new->geom, "#222222");
 }
 
 struct frame *
-frame_create_leaf(struct frame *parent, const struct geom *g,
+frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct window *windows)
 {
 	struct frame *new;
 
-	assert(g != NULL);
+	assert(geom != NULL);
 
 	new = malloc(sizeof *new);
 	if (new == NULL) {
+		return NULL;
+	}
+
+	new->win = win_create(geom, "hfwm");
+	if (!new->win) {
+		free(new);
 		return NULL;
 	}
 
@@ -83,7 +89,7 @@ frame_create_leaf(struct frame *parent, const struct geom *g,
 	new->u.windows = windows;
 
 	new->layout = default_leaf_layout;
-	new->geom   = *g;
+	new->geom   = *geom;
 
 	new->prev   = NULL;
 	new->next   = NULL;
@@ -118,12 +124,6 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 	old->layout     = layout;
 	old->u.children = a; /* or b */
 
-rectangle(XFillRectangle, &a->geom, "#556655");
-rectangle(XDrawRectangle, &a->geom, "#222222");
-
-rectangle(XFillRectangle, &b->geom, "#666666");
-rectangle(XDrawRectangle, &b->geom, "#222222");
-
 	return b;
 }
 
@@ -134,8 +134,6 @@ frame_focus(struct frame *curr, enum rel rel, int delta)
 	int i;
 
 	assert(curr != NULL);
-
-rectangle(XDrawRectangle, &curr->geom, "#662222");
 
 	for (i = 0; i < abs(delta); i++) {
 		switch (rel) {
@@ -153,9 +151,6 @@ rectangle(XDrawRectangle, &curr->geom, "#662222");
 
 		curr = next;
 	}
-
-rectangle(XDrawRectangle, &curr->geom, "#222222");
-rectangle(XFillRectangle, &curr->geom, "#772222");
 
 	return curr;
 }

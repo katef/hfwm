@@ -8,29 +8,54 @@
 #include "geom.h"
 #include "win.h"
 
-/* XXX: debugging stuff; no error checking */
+#include <stdio.h> /* XXX */
+
+Window
+win_create(const struct geom *geom, const char *name)
+{
+	Window win;
+	int screen;
+
+	screen = DefaultScreen(display);
+
+	win = XCreateSimpleWindow(display, root,
+		geom->x, geom->y, geom->w, geom->h,
+		WIN_BORDER,
+		BlackPixel(display, screen), WhitePixel(display, screen));
+
+	XStoreName(display, win, name);
+
+	win_resize(win, geom);
+
+	XMapWindow(display, win);
+	XFlush(display);
+
+	return win;
+}
+
 void
-rectangle(int (*f)(Display *, Drawable, GC, int, int, unsigned int, unsigned int),
-	struct geom *geom, const char *colour)
+win_resize(Window win, const struct geom *geom)
+{
+	assert(geom != NULL);
+
+	XMoveResizeWindow(display, win,
+		geom->x, geom->y, geom->w, geom->h);
+}
+
+void
+win_border(Window win, const char *colour)
 {
 	Colormap cm;
 	XColor col;
-	GC gc;
 
-	assert(f != NULL);
-	assert(geom != NULL);
 	assert(colour != NULL);
 
 	cm = DefaultColormap(display, 0);
 
-	gc = XCreateGC(display, root, 0, 0);
 	XParseColor(display, cm, colour, &col);
 	XAllocColor(display, cm, &col);
-	XSetForeground(display, gc, col.pixel);
 
-	f(display, root, gc, geom->x, geom->y, geom->w, geom->h);
-
-	XFlush(display);
+	XSetWindowBorder(display, win, col.pixel);
 }
 
 int
@@ -44,9 +69,7 @@ win_geom(Window win, struct geom *geom)
 
 	assert(geom != NULL);
 
-	if (!XGetGeometry(display, win, &rr, &x, &y, &w, &h, &bw, &depth)) {
-		return -1;
-	}
+	XGetGeometry(display, win, &rr, &x, &y, &w, &h, &bw, &depth);
 
 	if (x < 0 || y < 0) {
 		errno = EINVAL;
