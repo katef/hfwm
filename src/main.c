@@ -82,9 +82,8 @@ event_x11(void)
 {
 	while (XPending(display)) {
 		XEvent e;
-		int r;
 
-		r = XNextEvent(display, &e);
+		XNextEvent(display, &e);
 
 		switch (e.type) {
 		case KeyPress:
