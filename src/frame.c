@@ -42,12 +42,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 		break;
 	}
 
-/* TODO: if this is a FRAME_LEAF, no need to make a child for it; it's okay to have an empty window list */
-/* TODO: if this is a FRAME_BRANCH, do need a child for it; frame_create_leaf() there. leave to caller */
-
 	layout_split(layout, order, &new->geom, &old->geom);
-
-/* TODO: need to redraw everything below this node. maybe leave to caller */
 
 rectangle(XFillRectangle, &old->geom, "#556666");
 rectangle(XDrawRectangle, &old->geom, "#222222");

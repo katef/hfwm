@@ -231,6 +231,12 @@ cmd_split(char *const argv[])
 			return -1;
 		}
 
+		new->u.children = frame_create_leaf(new, &new->geom, NULL);
+		if (new->u.children == NULL) {
+			/* TODO: combine geometry (merge, undoing the split) */
+			return -1;
+		}
+
 		break;
 
 	case FRAME_LEAF:
@@ -249,6 +255,8 @@ cmd_split(char *const argv[])
 	}
 
 	current_frame = new;
+
+/* TODO: redraw everything below this node */
 
 	return 0;
 }
