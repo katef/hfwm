@@ -12,9 +12,6 @@
 #include "main.h"
 #include "win.h"
 
-enum layout default_frame_layout  = LAYOUT_HORIZ; /* TODO: configurable default */
-enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default */
-
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
 

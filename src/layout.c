@@ -6,6 +6,9 @@
 #include "order.h"
 #include "layout.h"
 
+enum layout default_frame_layout  = LAYOUT_HORIZ; /* TODO: configurable default */
+enum layout default_window_layout = LAYOUT_MAX;   /* TODO: configurable default */
+
 enum layout
 layout_lookup(const char *s)
 {
