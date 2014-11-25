@@ -20,11 +20,13 @@ hc keybind a spawn xterm
 hc mousebind 1 spawn xterm
 hc mousebind 3 spawn xterm
 
-hc keybind q prepend
-hc keybind w append
-hc keybind e focus -s +1
-hc keybind r focus -s -1
-hc keybind t focus -l +1
-hc keybind y focus -l -1
-hc keybind l layout -f +1
+hc keybind q split next vert
+hc keybind w split next horiz
+hc keybind e split prev vert
+hc keybind r split prev horiz
+hc keybind h focus -s +1
+hc keybind j focus -s -1
+hc keybind k focus -l +1
+hc keybind l focus -l -1
+hc keybind c layout +1
 

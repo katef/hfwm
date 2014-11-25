@@ -46,14 +46,14 @@ rel_lookup(const char *s)
 }
 
 static int
-delta(const char *s)
+delta_lookup(const char *s)
 {
 	size_t i;
 	long l;
 
 	struct {
 		const char *name;
-		int n;
+		int delta;
 	} a[] = {
 		{ "first", INT_MIN },
 		{ "last",  INT_MAX },
@@ -67,7 +67,7 @@ delta(const char *s)
 
 	for (i = 0; i < sizeof a / sizeof *a; i++) {
 		if (0 == strcmp(s, a[i].name)) {
-			return a[i].n;
+			return a[i].delta;
 		}
 	}
 
@@ -98,6 +98,34 @@ delta(const char *s)
 	}
 
 	return (int) l;
+}
+
+/* TODO: getopt with -n/-p instead */
+static enum order
+order_lookup(const char *s)
+{
+	size_t i;
+
+	struct {
+		const char *name;
+		enum order order;
+	} a[] = {
+		{ "prev", ORDER_PREV },
+		{ "next", ORDER_NEXT }
+	};
+
+	if (s == NULL) {
+		return ORDER_NEXT;
+	}
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (0 == strcmp(s, a[i].name)) {
+			return a[i].order;
+		}
+	}
+
+	errno = EINVAL;
+	return -1;
 }
 
 static int
@@ -177,46 +205,47 @@ cmd_mousebind(char *const argv[])
 }
 
 static int
-cmd_prepend(char *const argv[])
+cmd_split(char *const argv[])
 {
 	struct frame *new;
+	enum order order;
 	enum layout layout;
 
 	assert(current_frame != NULL);
 
-	if (current_frame->parent == NULL) {
-		layout = LAYOUT_MAX;
-	} else {
-		layout = current_frame->frame_layout;
-	}
-
-	new = frame_split(current_frame, layout, ORDER_PREV);
-	if (new == NULL) {
+	order = order_lookup(argv[0]);
+	if (order == -1) {
 		return -1;
 	}
 
-	current_frame = new;
+	switch (current_frame->type) {
+	case FRAME_BRANCH:
+		if (current_frame->parent == NULL) {
+			layout = LAYOUT_MAX;
+		} else {
+			layout = current_frame->parent->layout;
+		}
 
-	return 0;
-}
+		new = frame_split(current_frame, layout, order);
+		if (new == NULL) {
+			return -1;
+		}
 
-static int
-cmd_append(char *const argv[])
-{
-	struct frame *new;
-	enum layout l;
+		break;
 
-	assert(current_frame != NULL);
+	case FRAME_LEAF:
+		if (argv[1] == NULL) {
+			layout = default_branch_layout;
+		} else {
+			layout = layout_lookup(argv[1]);
+		}
 
-	if (current_frame->parent == NULL) {
-		l = LAYOUT_MAX;
-	} else {
-		l = current_frame->frame_layout;
-	}
+		new = frame_branch_leaf(current_frame, layout, order, NULL);
+		if (new == NULL) {
+			return -1;
+		}
 
-	new = frame_split(current_frame, l, ORDER_NEXT);
-	if (new == NULL) {
-		return -1;
+		break;
 	}
 
 	current_frame = new;
@@ -229,7 +258,7 @@ cmd_focus(char *const argv[])
 {
 	struct frame *new;
 	enum rel rel;
-	int d;
+	int delta;
 
 	/* TODO: -f -w for frame/window siblings */
 
@@ -238,16 +267,17 @@ cmd_focus(char *const argv[])
 		return -1;
 	}
 
-	d = delta(argv[1]);
-	if (d == 0) {
+	delta = delta_lookup(argv[1]);
+	if (delta == 0) {
 		return -1;
 	}
 
-	new = frame_focus(current_frame, rel, d);
+	new = frame_focus(current_frame, rel, delta);
 	if (new == NULL) {
 		return -1;
 	}
 
+fprintf(stderr, "focus, current = %p\n", (void *) current_frame);
 	current_frame = new;
 
 	return 0;
@@ -256,29 +286,20 @@ cmd_focus(char *const argv[])
 static int
 cmd_layout(char *const argv[])
 {
-	enum layout *curr, l;
-	int d;
+	enum layout layout;
+	int delta;
 
-	if (0 == strcmp(argv[0], "-f")) {
-		curr = &current_frame->frame_layout;
-	} else if (0 == strcmp(argv[0], "-w")) {
-		curr = &current_frame->window_layout;
-	} else {
-		errno = EINVAL;
-		return -1;
-	}
-
-	l = layout_lookup(argv[1]);
-	if (l == -1) {
-		d = delta(argv[1]);
-		if (d == 0) {
+	layout = layout_lookup(argv[0]);
+	if (layout == -1) {
+		delta = delta_lookup(argv[1]);
+		if (delta == 0) {
 			return -1;
 		}
 
-		l = layout_cycle(*curr, d);
+		layout = layout_cycle(current_frame->layout, delta);
 	}
 
-	*curr = l;
+	current_frame->layout = layout;
 
 	/* TODO: redraw frame */
 
@@ -297,8 +318,7 @@ cmd_dispatch(char *const argv[])
 		{ "keybind",   cmd_keybind   },
 		{ "mousebind", cmd_mousebind },
 		{ "spawn",     cmd_spawn     },
-		{ "prepend",   cmd_prepend   },
-		{ "append",    cmd_append    },
+		{ "split",     cmd_split     },
 		{ "focus",     cmd_focus     },
 		{ "layout",    cmd_layout    }
 	};

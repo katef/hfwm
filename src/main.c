@@ -25,6 +25,7 @@
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
+#include "win.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -170,7 +171,7 @@ main(void)
 		return 1;
 	}
 
-	current_frame = frame_create(&g);
+	current_frame = frame_create_leaf(NULL, &g, NULL);
 	if (current_frame == NULL) {
 		perror("frame_create");
 		return 1;

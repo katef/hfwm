@@ -11,8 +11,8 @@ enum layout {
 
 #define LAYOUT_COUNT 3
 
-extern enum layout default_frame_layout;
-extern enum layout default_window_layout;
+extern enum layout default_branch_layout;
+extern enum layout default_leaf_layout;
 
 enum layout
 layout_lookup(const char *name);
