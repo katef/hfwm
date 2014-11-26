@@ -81,6 +81,81 @@ frame_cat(struct frame **head, struct frame **tail)
 }
 
 struct frame *
+frame_merge(struct frame *p, enum layout layout, int delta)
+{
+	struct frame *old;
+	enum order order;
+	int i;
+
+	assert(p != NULL);
+
+	if (delta == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	order = delta > 0 ? ORDER_NEXT : ORDER_PREV;
+
+	for (i = 0; i < abs(delta); i++) {
+		old = order == ORDER_NEXT ? p->next : p->prev;
+		if (old == NULL) {
+			return p;
+		}
+
+		switch (order) {
+		case ORDER_NEXT: p->next = old->next; break;
+		case ORDER_PREV: p->prev = old->prev; break;
+		}
+
+		layout_merge(order, &p->geom, &old->geom);
+
+		switch (p->type) {
+		case FRAME_LEAF:
+			switch (order) {
+			case ORDER_NEXT:
+				win_cat(&p->u.windows, &old->u.windows);
+				break;
+
+			case ORDER_PREV:
+				win_cat(&old->u.windows, &p->u.windows);
+				p->u.windows = old->u.windows;
+				break;
+			}
+
+/* TODO: update windows to new sizes.
+TODO: would make a win_resize() for this anyway. call that
+*/
+			break;
+
+		case FRAME_BRANCH:
+			switch (order) {
+			case ORDER_NEXT:
+				(void) frame_cat(&p->u.children, &old->u.children);
+				break;
+
+			case ORDER_PREV:
+				(void) frame_cat(&old->u.children, &p->u.children);
+				p->u.children = old->u.children;
+				break;
+			}
+
+/*
+TODO: *recursively* update children to resize with their new geometry now *p is different
+TODO: would make a frame_resize() for this anyway. call that
+don't redraw them - just update sizes
+*/
+errno = ENOSYS;
+return NULL;
+			break;
+		}
+
+		free(old);
+	}
+
+	return p;
+}
+
+struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct window *windows)
 {

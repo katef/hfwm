@@ -205,8 +205,8 @@ static int
 cmd_split(char *const argv[])
 {
 	struct frame *new;
-	enum order order;
 	enum layout layout;
+	enum order order;
 
 	assert(current_frame != NULL);
 
@@ -249,6 +249,38 @@ cmd_split(char *const argv[])
 		}
 
 		break;
+	}
+
+	current_frame = new;
+
+/* TODO: redraw everything below this node */
+
+	return 0;
+}
+
+static int
+cmd_merge(char *const argv[])
+{
+	struct frame *new;
+	enum layout layout;
+	int delta;
+
+	assert(current_frame != NULL);
+
+	delta = delta_lookup(argv[0]);
+	if (delta == 0) {
+		return -1;
+	}
+
+	if (current_frame->parent == NULL) {
+		layout = LAYOUT_MAX;
+	} else {
+		layout = current_frame->parent->layout;
+	}
+
+	new = frame_merge(current_frame, layout, delta);
+	if (new == NULL) {
+		return -1;
 	}
 
 	current_frame = new;
@@ -333,6 +365,7 @@ cmd_dispatch(char *const argv[])
 		{ "mousebind", cmd_mousebind },
 		{ "spawn",     cmd_spawn     },
 		{ "split",     cmd_split     },
+		{ "merge",     cmd_merge     },
 		{ "focus",     cmd_focus     },
 		{ "layout",    cmd_layout    }
 	};

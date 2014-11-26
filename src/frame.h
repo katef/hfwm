@@ -40,6 +40,9 @@ void
 frame_cat(struct frame **head, struct frame **tail);
 
 struct frame *
+frame_merge(struct frame *old, enum layout layout, int delta);
+
+struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct window *windows);
 

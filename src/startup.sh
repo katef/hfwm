@@ -24,6 +24,9 @@ hc keybind q split next vert
 hc keybind w split next horiz
 hc keybind e split prev vert
 hc keybind r split prev horiz
+hc keybind t merge prev
+hc keybind y merge next
+
 hc keybind h focus -s +1
 hc keybind j focus -s -1
 hc keybind k focus -l +1
