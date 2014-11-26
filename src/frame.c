@@ -149,6 +149,11 @@ frame_focus(struct frame *curr, enum rel rel, int delta)
 
 	assert(curr != NULL);
 
+	if (delta == 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	for (i = 0; i < abs(delta); i++) {
 		switch (rel) {
 		case REL_SIBLING: next = delta > 0 ? curr->next       : curr->prev;   break;
