@@ -22,5 +22,8 @@ win_border(Window win, const char *colour);
 int
 win_geom(Window win, struct geom *geom);
 
+void
+win_cat(struct window **head, struct window **tail);
+
 #endif
 

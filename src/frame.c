@@ -66,6 +66,20 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	return new;
 }
 
+void
+frame_cat(struct frame **head, struct frame **tail)
+{
+	struct frame **p;
+
+	assert(head != NULL);
+
+	for (p = head; *p != NULL; p = &(*p)->next)
+		;
+
+	*p    = *tail;
+	*tail = NULL;
+}
+
 struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct window *windows)

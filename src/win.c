@@ -88,3 +88,17 @@ win_geom(Window win, struct geom *geom)
 	return 0;
 }
 
+void
+win_cat(struct window **head, struct window **tail)
+{
+	struct window **p;
+
+	assert(head != NULL);
+
+	for (p = head; *p != NULL; p = &(*p)->next)
+		;
+
+	*p    = *tail;
+	*tail = NULL;
+}
+
