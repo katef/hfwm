@@ -77,3 +77,23 @@ layout_split(enum layout layout, enum order order, struct geom *new, struct geom
 	}
 }
 
+void
+layout_merge(enum order order, struct geom *dst, struct geom *src)
+{
+	assert(dst != NULL);
+	assert(src != NULL);
+
+	dst->w += src->w;
+	dst->h += src->h;
+
+	switch (order) {
+	case ORDER_PREV:
+		dst->x = src->x;
+		dst->y = src->y;
+		break;
+
+	case ORDER_NEXT:
+		break;
+	}
+}
+

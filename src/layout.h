@@ -23,5 +23,8 @@ layout_cycle(enum layout l, int delta);
 void
 layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old);
 
+void
+layout_merge(enum order order, struct geom *dst, struct geom *src);
+
 #endif
 
