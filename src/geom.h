@@ -8,5 +8,18 @@ struct geom {
 	unsigned h;
 };
 
+struct ratio {
+	double x;
+	double y;
+	double w;
+	double h;
+};
+
+void
+geom_ratio(struct ratio *r, const struct geom *old, const struct geom *new);
+
+void
+geom_scale(struct geom *g, const struct ratio *r);
+
 #endif
 
