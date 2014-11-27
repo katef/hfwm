@@ -47,61 +47,6 @@ rel_lookup(const char *s)
 }
 
 static int
-delta_lookup(const char *s)
-{
-	size_t i;
-	long l;
-
-	struct {
-		const char *name;
-		int delta;
-	} a[] = {
-		{ "first", INT_MIN },
-		{ "last",  INT_MAX },
-		{ "next",       +1 },
-		{ "prev",       -1 }
-	};
-
-	if (s == NULL) {
-		return +1;
-	}
-
-	for (i = 0; i < sizeof a / sizeof *a; i++) {
-		if (0 == strcmp(s, a[i].name)) {
-			return a[i].delta;
-		}
-	}
-
-	{
-		char *e;
-
-		errno = 0;
-
-		l = strtol(s, &e, 0);
-		if (*s == '\0' || *e != '\0') {
-			errno = EINVAL;
-			return 0;
-		}
-
-		if ((l == LONG_MIN || l == LONG_MAX) && errno != 0) {
-			return 0;
-		}
-
-		if (l <= INT_MIN || l >= INT_MAX) {
-			errno = ERANGE;
-			return 0;
-		}
-
-		if (l == 0) {
-			errno = EINVAL;
-			return 0;
-		}
-	}
-
-	return (int) l;
-}
-
-static int
 cmd_spawn(char *const argv[])
 {
 	/* TODO: getopt -d to detach child */
@@ -235,12 +180,12 @@ cmd_merge(char *const argv[])
 {
 	struct frame *new;
 	enum layout layout;
-	int delta;
+	enum order order;
 
 	assert(current_frame != NULL);
 
-	delta = delta_lookup(argv[0]);
-	if (delta == 0) {
+	order = order_lookup(argv[0]);
+	if (order == -1) {
 		return -1;
 	}
 
@@ -250,7 +195,7 @@ cmd_merge(char *const argv[])
 		layout = current_frame->parent->layout;
 	}
 
-	new = frame_merge(current_frame, layout, delta);
+	new = frame_merge(current_frame, layout, order);
 	if (new == NULL) {
 		return -1;
 	}
@@ -266,8 +211,8 @@ static int
 cmd_focus(char *const argv[])
 {
 	struct frame *new;
+	enum order order;
 	enum rel rel;
-	int delta;
 
 	/* TODO: -f -w for frame/window siblings */
 
@@ -281,12 +226,12 @@ cmd_focus(char *const argv[])
 		return -1;
 	}
 
-	delta = delta_lookup(argv[1]);
-	if (delta == 0) {
+	order = order_lookup(argv[1]);
+	if (order == -1) {
 		return -1;
 	}
 
-	new = frame_focus(current_frame, rel, delta);
+	new = frame_focus(current_frame, rel, order);
 	if (new == NULL) {
 		return -1;
 	}
@@ -305,13 +250,20 @@ static int
 cmd_layout(char *const argv[])
 {
 	enum layout layout;
-	int delta;
+	enum order order;
 
 	layout = layout_lookup(argv[0]);
 	if (layout == -1) {
-		delta = delta_lookup(argv[1]);
-		if (delta == 0) {
+		int delta;
+
+		order = order_lookup(argv[0]);
+		if (order == -1) {
 			return -1;
+		}
+
+		switch (order) {
+		case ORDER_NEXT: delta = +1; break;
+		case ORDER_PREV: delta = -1; break;
 		}
 
 		layout = layout_cycle(current_frame->layout, delta);
@@ -328,17 +280,11 @@ static int
 cmd_redist(char *const argv[])
 {
 	enum layout layout;
+	enum order order;
 	unsigned n;
-	int delta;
 
-	delta = delta_lookup(argv[0]);
-	if (delta == 0) {
-		return -1;
-	}
-
-	if (abs(delta) > 1) {
-		/* XXX: will get rid of delta anyway */
-		errno = ENOSYS;
+	order = order_lookup(argv[0]);
+	if (order == -1) {
 		return -1;
 	}
 
@@ -350,7 +296,7 @@ cmd_redist(char *const argv[])
 		layout = current_frame->parent->layout;
 	}
 
-	frame_redistribute(current_frame, layout, delta, n);
+	frame_redistribute(current_frame, layout, order, n);
 
 	return 0;
 }

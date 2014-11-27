@@ -109,62 +109,52 @@ frame_cat(struct frame **head, struct frame **tail)
 }
 
 struct frame *
-frame_merge(struct frame *p, enum layout layout, int delta)
+frame_merge(struct frame *p, enum layout layout, enum order order)
 {
 	struct frame *old;
-	enum order order;
-	int i;
 
 	assert(p != NULL);
 
-	if (delta == 0) {
-		errno = EINVAL;
-		return NULL;
+	old = order == ORDER_NEXT ? p->next : p->prev;
+	if (old == NULL) {
+		return p;
 	}
 
-	order = delta > 0 ? ORDER_NEXT : ORDER_PREV;
+	switch (order) {
+	case ORDER_NEXT: p->next = old->next; break;
+	case ORDER_PREV: p->prev = old->prev; break;
+	}
 
-	for (i = 0; i < abs(delta); i++) {
-		old = order == ORDER_NEXT ? p->next : p->prev;
-		if (old == NULL) {
-			return p;
-		}
+	layout_merge(order, &p->geom, &old->geom);
 
+	switch (p->type) {
+	case FRAME_LEAF:
 		switch (order) {
-		case ORDER_NEXT: p->next = old->next; break;
-		case ORDER_PREV: p->prev = old->prev; break;
-		}
-
-		layout_merge(order, &p->geom, &old->geom);
-
-		switch (p->type) {
-		case FRAME_LEAF:
-			switch (order) {
-			case ORDER_NEXT:
-				win_cat(&p->u.windows, &old->u.windows);
-				break;
-
-			case ORDER_PREV:
-				win_cat(&old->u.windows, &p->u.windows);
-				p->u.windows = old->u.windows;
-				break;
-			}
-
-			win_resize(p->win, &p->geom); /* XXX: to be done in frame_scale */
-
+		case ORDER_NEXT:
+			win_cat(&p->u.windows, &old->u.windows);
 			break;
 
-		case FRAME_BRANCH:
-			switch (order) {
-			case ORDER_NEXT:
-				(void) frame_cat(&p->u.children, &old->u.children);
-				break;
+		case ORDER_PREV:
+			win_cat(&old->u.windows, &p->u.windows);
+			p->u.windows = old->u.windows;
+			break;
+		}
 
-			case ORDER_PREV:
-				(void) frame_cat(&old->u.children, &p->u.children);
-				p->u.children = old->u.children;
-				break;
-			}
+		win_resize(p->win, &p->geom); /* XXX: to be done in frame_scale */
+
+		break;
+
+	case FRAME_BRANCH:
+		switch (order) {
+		case ORDER_NEXT:
+			(void) frame_cat(&p->u.children, &old->u.children);
+			break;
+
+		case ORDER_PREV:
+			(void) frame_cat(&old->u.children, &p->u.children);
+			p->u.children = old->u.children;
+			break;
+		}
 
 /*
 TODO: *recursively* update children to resize with their new geometry now *p is different
@@ -173,11 +163,10 @@ don't redraw them - just update sizes
 */
 errno = ENOSYS;
 return NULL;
-			break;
-		}
-
-		free(old);
+		break;
 	}
+
+	free(old);
 
 	return p;
 }
@@ -244,73 +233,70 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 }
 
 struct frame *
-frame_focus(struct frame *curr, enum rel rel, int delta)
+frame_focus(struct frame *curr, enum rel rel, enum order order)
 {
 	struct frame *next;
-	int i;
 
 	assert(curr != NULL);
 
-	if (delta == 0) {
-		errno = EINVAL;
-		return NULL;
-	}
+	switch (order) {
+	case ORDER_NEXT:
+		if (curr->type != FRAME_BRANCH && rel == REL_LINEAGE) {
+			return curr;
+		}
 
-	for (i = 0; i < abs(delta); i++) {
 		switch (rel) {
-		case REL_SIBLING: next = delta > 0 ? curr->next       : curr->prev;   break;
-		case REL_LINEAGE: next = delta > 0 ? curr->u.children : curr->parent; break;
+		case REL_SIBLING: next = curr->next;       break;
+		case REL_LINEAGE: next = curr->u.children; break;
 		}
 
-		if (curr->type != FRAME_BRANCH && next == curr->u.children) {
-			return curr;
+		break;
+
+	case ORDER_PREV:
+		switch (rel) {
+		case REL_SIBLING: next = curr->prev;       break;
+		case REL_LINEAGE: next = curr->parent;     break;
 		}
 
-		if (next == NULL) {
-			return curr;
-		}
-
-		curr = next;
+		break;
 	}
 
-	return curr;
+	if (next == NULL) {
+		return curr;
+	}
+
+	return next;
 }
 
 void
-frame_redistribute(struct frame *p, enum layout layout, int delta, unsigned n)
+frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n)
 {
 	struct frame *curr, *next;
-	enum order order;
-	int i;
+	struct ratio ra, rb;
+	struct geom a, b;
 
 	assert(p != NULL);
 
-	order = delta > 0 ? ORDER_NEXT : ORDER_PREV;
-
 	curr = p;
 
-	for (i = 0; i < abs(delta); i++) {
-		struct geom a, b;
-		struct ratio ra, rb;
-
-		next = order == ORDER_NEXT ? p->next : p->prev;
-
-		if (next == NULL) {
-			return;
-		}
-
-		a = curr->geom;
-		b = next->geom;
-
-		layout_redistribute(&a, &b, layout, n);
-
-		geom_ratio(&ra, &a, &curr->geom);
-		geom_ratio(&rb, &b, &next->geom);
-
-		frame_scale(curr, &ra);
-		frame_scale(next, &rb);
-
-		curr = next;
+	switch (order) {
+	case ORDER_NEXT: next = p->next; break;
+	case ORDER_PREV: next = p->prev; break;
 	}
+
+	if (next == NULL) {
+		return;
+	}
+
+	a = curr->geom;
+	b = next->geom;
+
+	layout_redistribute(&a, &b, layout, n);
+
+	geom_ratio(&ra, &a, &curr->geom);
+	geom_ratio(&rb, &b, &next->geom);
+
+	frame_scale(curr, &ra);
+	frame_scale(next, &rb);
 }
 

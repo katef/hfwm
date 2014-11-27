@@ -40,7 +40,7 @@ void
 frame_cat(struct frame **head, struct frame **tail);
 
 struct frame *
-frame_merge(struct frame *old, enum layout layout, int delta);
+frame_merge(struct frame *old, enum layout layout, enum order order);
 
 struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
@@ -51,10 +51,10 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 	struct window *windows);
 
 struct frame *
-frame_focus(struct frame *curr, enum rel rel, int delta);
+frame_focus(struct frame *curr, enum rel rel, enum order order);
 
 void
-frame_redistribute(struct frame *p, enum layout layout, int delta, unsigned n);
+frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n);
 
 #endif
 
