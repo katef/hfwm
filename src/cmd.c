@@ -352,6 +352,37 @@ cmd_layout(char *const argv[])
 	return 0;
 }
 
+static int
+cmd_redist(char *const argv[])
+{
+	enum layout layout;
+	unsigned n;
+	int delta;
+
+	delta = delta_lookup(argv[0]);
+	if (delta == 0) {
+		return -1;
+	}
+
+	if (abs(delta) > 1) {
+		/* XXX: will get rid of delta anyway */
+		errno = ENOSYS;
+		return -1;
+	}
+
+	n = atoi(argv[1]); /* TODO: error checking */
+
+	if (current_frame->parent == NULL) {
+		layout = LAYOUT_MAX;
+	} else {
+		layout = current_frame->parent->layout;
+	}
+
+	frame_redistribute(current_frame, layout, delta, n);
+
+	return 0;
+}
+
 int
 cmd_dispatch(char *const argv[])
 {
@@ -367,7 +398,8 @@ cmd_dispatch(char *const argv[])
 		{ "split",     cmd_split     },
 		{ "merge",     cmd_merge     },
 		{ "focus",     cmd_focus     },
-		{ "layout",    cmd_layout    }
+		{ "layout",    cmd_layout    },
+		{ "redist",    cmd_redist    }
 	};
 
 	assert(argv != NULL);

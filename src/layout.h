@@ -26,5 +26,8 @@ layout_split(enum layout layout, enum order order, struct geom *new, struct geom
 void
 layout_merge(enum order order, struct geom *dst, struct geom *src);
 
+void
+layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned n);
+
 #endif
 

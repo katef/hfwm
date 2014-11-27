@@ -53,5 +53,8 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 struct frame *
 frame_focus(struct frame *curr, enum rel rel, int delta);
 
+void
+frame_redistribute(struct frame *p, enum layout layout, int delta, unsigned n);
+
 #endif
 

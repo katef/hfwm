@@ -15,6 +15,34 @@
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
 
+static void
+frame_scale(struct frame *p, const struct ratio *r)
+{
+	struct frame *q;
+	struct window *w;
+
+	assert(p != NULL);
+	assert(r != NULL);
+
+	switch (p->type) {
+	case FRAME_BRANCH:
+		for (q = p->u.children; q != NULL; q = q->next) {
+			frame_scale(q, r);
+		}
+		break;
+
+	case FRAME_LEAF:
+		win_resize(p->win, &p->geom);
+
+		for (w = p->u.windows; w != NULL; w = w->next) {
+			/* TODO: win_resize() on each w->win here */
+		}
+		break;
+	}
+
+	geom_scale(&p->geom, r);
+}
+
 struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
@@ -122,9 +150,8 @@ frame_merge(struct frame *p, enum layout layout, int delta)
 				break;
 			}
 
-/* TODO: update windows to new sizes.
-TODO: would make a win_resize() for this anyway. call that
-*/
+			win_resize(p->win, &p->geom); /* XXX: to be done in frame_scale */
+
 			break;
 
 		case FRAME_BRANCH:
@@ -141,7 +168,7 @@ TODO: would make a win_resize() for this anyway. call that
 
 /*
 TODO: *recursively* update children to resize with their new geometry now *p is different
-TODO: would make a frame_resize() for this anyway. call that
+TODO: would make a frame_scale() for this anyway. call that
 don't redraw them - just update sizes
 */
 errno = ENOSYS;
@@ -247,5 +274,43 @@ frame_focus(struct frame *curr, enum rel rel, int delta)
 	}
 
 	return curr;
+}
+
+void
+frame_redistribute(struct frame *p, enum layout layout, int delta, unsigned n)
+{
+	struct frame *curr, *next;
+	enum order order;
+	int i;
+
+	assert(p != NULL);
+
+	order = delta > 0 ? ORDER_NEXT : ORDER_PREV;
+
+	curr = p;
+
+	for (i = 0; i < abs(delta); i++) {
+		struct geom a, b;
+		struct ratio ra, rb;
+
+		next = order == ORDER_NEXT ? p->next : p->prev;
+
+		if (next == NULL) {
+			return;
+		}
+
+		a = curr->geom;
+		b = next->geom;
+
+		layout_redistribute(&a, &b, layout, n);
+
+		geom_ratio(&ra, &a, &curr->geom);
+		geom_ratio(&rb, &b, &next->geom);
+
+		frame_scale(curr, &ra);
+		frame_scale(next, &rb);
+
+		curr = next;
+	}
 }
 
