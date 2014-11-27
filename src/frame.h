@@ -33,6 +33,9 @@ struct frame {
 
 extern struct frame *current_frame;
 
+enum rel
+rel_lookup(const char *s);
+
 struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order);
 

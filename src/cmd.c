@@ -20,32 +20,6 @@
 #include "key.h"
 #include "win.h"
 
-static enum rel
-rel_lookup(const char *s)
-{
-	size_t i;
-
-	struct {
-		const char *name;
-		enum rel rel;
-	} a[] = {
-		{ "-s", REL_SIBLING },
-		{ "-l", REL_LINEAGE }
-	};
-
-	if (s == NULL) {
-		return REL_SIBLING;
-	}
-
-	for (i = 0; i < sizeof a / sizeof *a; i++) {
-		if (0 == strcmp(s, a[i].name)) {
-			return a[i].rel;
-		}
-	}
-
-	return -1;
-}
-
 static int
 cmd_spawn(char *const argv[])
 {

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -41,6 +42,32 @@ frame_scale(struct frame *p, const struct ratio *r)
 	}
 
 	geom_scale(&p->geom, r);
+}
+
+enum rel
+rel_lookup(const char *s)
+{
+	size_t i;
+
+	struct {
+		const char *name;
+		enum rel rel;
+	} a[] = {
+		{ "sibling", REL_SIBLING },
+		{ "lineage", REL_LINEAGE }
+	};
+
+	if (s == NULL) {
+		return REL_SIBLING;
+	}
+
+	for (i = 0; i < sizeof a / sizeof *a; i++) {
+		if (0 == strcmp(s, a[i].name)) {
+			return a[i].rel;
+		}
+	}
+
+	return -1;
 }
 
 struct frame *

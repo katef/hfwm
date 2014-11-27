@@ -29,9 +29,9 @@ hc keybind y merge next
 hc keybind u redist prev 10
 hc keybind i redist next 10
 
-hc keybind h focus -s next
-hc keybind j focus -s prev
-hc keybind k focus -l next
-hc keybind l focus -l prev
+hc keybind h focus sibling next
+hc keybind j focus sibling prev
+hc keybind k focus lineage next
+hc keybind l focus lineage prev
 hc keybind c layout next
 
