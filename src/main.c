@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <assert.h>
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,6 +30,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+char hostname[HOST_NAME_MAX];
 Display *display;
 Window root;
 
@@ -144,6 +146,11 @@ main(void)
 {
 	int x11, ipc;
 	struct geom g;
+
+	if (-1 == gethostname(hostname, sizeof hostname)) {
+		perror("gethostname");
+		return 1;
+	}
 
 	display = XOpenDisplay(NULL);
 	root    = DefaultRootWindow(display); /* TODO: RootWindow() instead */
