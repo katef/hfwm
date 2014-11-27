@@ -101,34 +101,6 @@ delta_lookup(const char *s)
 	return (int) l;
 }
 
-/* TODO: getopt with -n/-p instead */
-static enum order
-order_lookup(const char *s)
-{
-	size_t i;
-
-	struct {
-		const char *name;
-		enum order order;
-	} a[] = {
-		{ "prev", ORDER_PREV },
-		{ "next", ORDER_NEXT }
-	};
-
-	if (s == NULL) {
-		return ORDER_NEXT;
-	}
-
-	for (i = 0; i < sizeof a / sizeof *a; i++) {
-		if (0 == strcmp(s, a[i].name)) {
-			return a[i].order;
-		}
-	}
-
-	errno = EINVAL;
-	return -1;
-}
-
 static int
 cmd_spawn(char *const argv[])
 {

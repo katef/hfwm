@@ -6,5 +6,8 @@ enum order {
 	ORDER_NEXT
 };
 
+enum order
+order_lookup(const char *s);
+
 #endif
 
