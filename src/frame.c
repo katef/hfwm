@@ -128,7 +128,8 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	layout_split(layout, order, &new->geom, &old->geom);
 
 	if (new->type == FRAME_LEAF) {
-		new->win = win_create(&new->geom, "hfwm");
+		new->win = win_create(&new->geom, "hfwm", "Branch");
+		/* TODO: maybe set window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
 		win_resize(old->win, &new->geom);
 	}
 
@@ -230,7 +231,7 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 		return NULL;
 	}
 
-	new->win = win_create(geom, "hfwm");
+	new->win = win_create(geom, "hfwm", "Leaf");
 	if (!new->win) {
 		free(new);
 		return NULL;

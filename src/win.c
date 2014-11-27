@@ -1,8 +1,14 @@
+#define _XOPEN_SOURCE 500
+
+#include <unistd.h>
+
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <errno.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "main.h"
 #include "geom.h"
@@ -11,19 +17,64 @@
 #include <stdio.h> /* XXX */
 
 Window
-win_create(const struct geom *geom, const char *name)
+win_create(const struct geom *geom, const char *name, const char *class)
 {
 	Window win;
-	int screen;
+	unsigned long valuemask;
+    XSetWindowAttributes attrs;
+	XTextProperty xtp_name, xtp_client;
+	XWMHints wm_hints;
+	XSizeHints size_hints;
+	XClassHint class_hints;
+	char *argv[] = { NULL };
+	char *client = hostname;
 
-	screen = DefaultScreen(display);
+	assert(geom != NULL);
+	assert(name != NULL);
+	assert(class != NULL);
 
-	win = XCreateSimpleWindow(display, root,
+	valuemask = CWEventMask;
+
+	attrs.event_mask = EnterWindowMask;
+
+	if (0 == XStringListToTextProperty((char **) &name, 1, &xtp_name)) {
+		perror("XStringListToTextProperty");
+		exit(EXIT_FAILURE);
+	}
+
+	if (0 == XStringListToTextProperty(&client, 1, &xtp_client)) {
+		perror("XStringListToTextProperty");
+		exit(EXIT_FAILURE);
+	}
+
+	win = XCreateWindow(display, root,
 		geom->x, geom->y, geom->w, geom->h,
 		WIN_BORDER,
-		BlackPixel(display, screen), WhitePixel(display, screen));
+		CopyFromParent, /* XXX: why not InputOutput? */
+		CopyFromParent,
+		CopyFromParent,
+		valuemask, &attrs);
 
-	XStoreName(display, win, name);
+	class_hints.res_name  = "hfwm"; /* note not WM_NAME */
+	class_hints.res_class = (char *) class;
+
+	wm_hints.flags = InputHint | StateHint;
+	wm_hints.initial_state = NormalState;
+
+	size_hints.flags = 0;
+
+	XSetWMProperties(display, win,
+		&xtp_name, &xtp_name,
+		argv, sizeof argv / sizeof *argv - 1,
+		&size_hints, &wm_hints, &class_hints);
+
+	/*
+	 * WM_CLIENT_MACHINE is supposed to be the hostname of the client's machine
+	 * from the perspective of the X11 server. There's no way we could possibly
+	 * know that, if there even is one. I'm setting the hostname instead,
+	 * because at least that might be a useful reminder for a human.
+	 */
+	XSetWMClientMachine(display, win, &xtp_client);
 
 	win_resize(win, geom);
 

@@ -101,6 +101,10 @@ event_x11(void)
 			}
 			break;
 
+		case EnterNotify:
+			fprintf(stderr, "enternotify id=%p\n", (void *) e.xcrossing.window);
+			break;
+
 		default:
 			fprintf(stderr, "unhandled event %d\n", e.type);
 			continue;
