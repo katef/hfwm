@@ -17,6 +17,34 @@
 struct frame *current_frame;
 
 static void
+frame_resize(struct frame *p, const struct geom *g)
+{
+	struct frame *q;
+	struct window *w;
+
+	assert(p != NULL);
+	assert(g != NULL);
+
+	switch (p->type) {
+	case FRAME_BRANCH:
+		for (q = p->u.children; q != NULL; q = q->next) {
+			frame_resize(q, g);
+		}
+		break;
+
+	case FRAME_LEAF:
+		win_resize(p->win, &p->geom);
+
+		for (w = p->u.windows; w != NULL; w = w->next) {
+			/* TODO: win_resize() on each w->win here */
+		}
+		break;
+	}
+
+	p->geom = *g;
+}
+
+static void
 frame_scale(struct frame *p, const struct ratio *r)
 {
 	struct frame *q;
@@ -166,9 +194,6 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 			p->u.windows = old->u.windows;
 			break;
 		}
-
-		win_resize(p->win, &p->geom); /* XXX: to be done in frame_scale */
-
 		break;
 
 	case FRAME_BRANCH:
@@ -182,16 +207,10 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 			p->u.children = old->u.children;
 			break;
 		}
-
-/*
-TODO: *recursively* update children to resize with their new geometry now *p is different
-TODO: would make a frame_scale() for this anyway. call that
-don't redraw them - just update sizes
-*/
-errno = ENOSYS;
-return NULL;
 		break;
 	}
+
+	frame_resize(p, &p->geom);
 
 	free(old);
 
