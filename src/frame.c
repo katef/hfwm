@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "geom.h"
 #include "order.h"
@@ -15,6 +16,10 @@
 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
+
+/* for XClassHint */
+#define FRAME_NAME  "hfwm"
+#define FRAME_CLASS "Frame"
 
 static void
 frame_resize(struct frame *p, const struct geom *g)
@@ -128,7 +133,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	layout_split(layout, order, &new->geom, &old->geom);
 
 	if (new->type == FRAME_LEAF) {
-		new->win = win_create(&new->geom, "hfwm", "Branch");
+		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS);
 		/* TODO: maybe set window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
 		win_resize(old->win, &new->geom);
 	}
@@ -231,7 +236,7 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 		return NULL;
 	}
 
-	new->win = win_create(geom, "hfwm", "Leaf");
+	new->win = win_create(geom, FRAME_NAME, FRAME_CLASS);
 	if (!new->win) {
 		free(new);
 		return NULL;
@@ -345,5 +350,70 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 
 	frame_scale(curr, &ra);
 	frame_scale(next, &rb);
+}
+
+static struct frame *
+frame_findp(const struct frame *p, Window win, enum frame_type type)
+{
+	const struct frame *q;
+
+	assert(p != NULL);
+
+	if (p->win == win && p->type == type) {
+		return (struct frame *) p;
+	}
+
+	switch (p->type) {
+	case FRAME_BRANCH:
+		for (q = p->u.children; q != NULL; q = q->next) {
+			struct frame *r;
+
+			r = frame_findp(q, win, type);
+			if (r != NULL) {
+				return r;
+			}
+		}
+		break;
+
+	case FRAME_LEAF:
+		break;
+	}
+
+	return NULL;
+}
+
+struct frame *
+frame_find(Window win, enum frame_type type)
+{
+	XClassHint xclass_hints;
+	const struct frame *p;
+	struct frame *r;
+
+	if (0 == XGetClassHint(display, win, &xclass_hints)) {
+		return NULL;
+	}
+
+	if (0 != strcmp(xclass_hints.res_name, FRAME_NAME)) {
+		errno = ENOENT;
+		return NULL;
+	}
+
+	if (0 != strcmp(xclass_hints.res_class, FRAME_CLASS)) {
+		errno = ENOENT;
+		return NULL;
+	}
+
+	for (p = current_frame; p->parent != NULL; p = p->parent)
+		;
+
+	r = frame_findp(p, win, type);
+	if (r == NULL) {
+		errno = ENOENT;
+		return NULL;
+	}
+
+	assert(r->type == type);
+
+	return r;
 }
 

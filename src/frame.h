@@ -59,5 +59,8 @@ frame_focus(struct frame *curr, enum rel rel, enum order order);
 void
 frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n);
 
+struct frame *
+frame_find(Window win, enum frame_type type);
+
 #endif
 
