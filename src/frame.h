@@ -4,9 +4,9 @@
 struct window;
 struct geom;
 
-#define FRAME_MARGIN  10
-#define FRAME_BORDER  5
-#define FRAME_SPACING 5
+#define FRAME_MARGIN  2
+#define FRAME_BORDER  1
+#define FRAME_SPACING 2
 
 enum rel {
 	REL_SIBLING,
