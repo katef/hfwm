@@ -135,7 +135,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	if (new->type == FRAME_LEAF) {
 		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS);
 		/* TODO: maybe set window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
-		win_resize(old->win, &new->geom);
+		win_resize(old->win, &old->geom);
 	}
 
 	switch (order) {
