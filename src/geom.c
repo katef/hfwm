@@ -1,32 +1,28 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h> /* XXX */
 #include <errno.h>
 
 #include "geom.h"
 
 int
 geom_inner(struct geom *in, const struct geom *g,
-	unsigned int bw, unsigned int spacing)
+	unsigned int bw, int spacing)
 {
 	assert(in != NULL);
 	assert(g != NULL);
-
-	if (g->h <= bw * 2 + spacing * 2) {
-		errno = ERANGE;
-		return -1;
-	}
-
-	if (g->w <= bw * 2 + spacing * 2) {
-		errno = ERANGE;
-		return -1;
-	}
 
 	in->x = g->x + spacing;
 	in->y = g->y + spacing;
 
 	in->w = g->w - bw * 2 - spacing * 2;
 	in->h = g->h - bw * 2 - spacing * 2;
+
+	if (g->w < in->w || g->h < in->h) {
+		errno = ERANGE;
+		return -1;
+	}
 
 	return 0;
 }
