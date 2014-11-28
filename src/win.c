@@ -85,6 +85,12 @@ win_create(const struct geom *geom, const char *name, const char *class)
 	return win;
 }
 
+void
+win_destroy(Window win)
+{
+	XDestroyWindow(display, win);
+}
+
 int
 win_resize(Window win, const struct geom *geom)
 {

@@ -13,6 +13,9 @@ struct window {
 Window
 win_create(const struct geom *geom, const char *name, const char *class);
 
+void
+win_destroy(Window win);
+
 int
 win_resize(Window win, const struct geom *geom);
 

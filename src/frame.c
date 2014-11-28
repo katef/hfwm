@@ -222,6 +222,8 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 
 	frame_resize(p, &p->geom);
 
+	win_destroy(old->win);
+
 	free(old);
 
 	return p;
@@ -284,6 +286,9 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 	old->type       = FRAME_BRANCH;
 	old->layout     = layout;
 	old->u.children = a; /* or b */
+
+	/* TODO: optimisation; transplant this to one of the leaves, instead of creating a new window */
+	win_destroy(old->win);
 
 	return b;
 }
