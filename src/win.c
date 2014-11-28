@@ -16,17 +16,29 @@
 
 #include <stdio.h> /* XXX */
 
-static void
+static int
 inner(struct geom *in, const struct geom *g)
 {
 	assert(in != NULL);
 	assert(g != NULL);
+
+	if (g->h <= WIN_BORDER * 2) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	if (g->w <= WIN_BORDER * 2) {
+		errno = ERANGE;
+		return -1;
+	}
 
 	in->x = g->x;
 	in->y = g->y;
 
 	in->w = g->w - WIN_BORDER * 2;
 	in->h = g->h - WIN_BORDER * 2;
+
+	return 0;
 }
 
 Window
@@ -61,7 +73,9 @@ win_create(const struct geom *geom, const char *name, const char *class)
 		exit(EXIT_FAILURE);
 	}
 
-	inner(&in, geom);
+	if (-1 == inner(&in, geom)) {
+		return (Window) 0x0;
+	}
 
 	win = XCreateWindow(display, root,
 		in.x, in.y, in.w, in.h,
@@ -92,24 +106,26 @@ win_create(const struct geom *geom, const char *name, const char *class)
 	 */
 	XSetWMClientMachine(display, win, &xtp_client);
 
-	win_resize(win, geom);
-
 	XMapWindow(display, win);
 
 	return win;
 }
 
-void
+int
 win_resize(Window win, const struct geom *geom)
 {
 	struct geom in;
 
 	assert(geom != NULL);
 
-	inner(&in, geom);
+	if (-1 == inner(&in, geom)) {
+		return -1;
+	}
 
 	XMoveResizeWindow(display, win,
 		in.x, in.y, in.w, in.h);
+
+	return 0;
 }
 
 void
