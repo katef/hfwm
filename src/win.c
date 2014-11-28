@@ -16,6 +16,19 @@
 
 #include <stdio.h> /* XXX */
 
+static void
+outer(struct geom *o, const struct geom *g)
+{
+	assert(o != NULL);
+	assert(g != NULL);
+
+	o->x = g->x;
+	o->y = g->y;
+
+	o->w = g->w - WIN_BORDER * 2;
+	o->h = g->h - WIN_BORDER * 2;
+}
+
 Window
 win_create(const struct geom *geom, const char *name, const char *class)
 {
@@ -28,6 +41,7 @@ win_create(const struct geom *geom, const char *name, const char *class)
 	XClassHint class_hints;
 	char *argv[] = { NULL };
 	char *client = hostname;
+	struct geom o;
 
 	assert(geom != NULL);
 	assert(name != NULL);
@@ -47,8 +61,10 @@ win_create(const struct geom *geom, const char *name, const char *class)
 		exit(EXIT_FAILURE);
 	}
 
+	outer(&o, geom);
+
 	win = XCreateWindow(display, root,
-		geom->x, geom->y, geom->w, geom->h,
+		o.x, o.y, o.w, o.h,
 		WIN_BORDER,
 		CopyFromParent, /* XXX: why not InputOutput? */
 		CopyFromParent,
@@ -86,10 +102,14 @@ win_create(const struct geom *geom, const char *name, const char *class)
 void
 win_resize(Window win, const struct geom *geom)
 {
+	struct geom o;
+
 	assert(geom != NULL);
 
+	outer(&o, geom);
+
 	XMoveResizeWindow(display, win,
-		geom->x, geom->y, geom->w, geom->h);
+		o.x, o.y, o.w, o.h);
 }
 
 void
