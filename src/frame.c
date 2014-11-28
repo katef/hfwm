@@ -38,7 +38,8 @@ frame_resize(struct frame *p, const struct geom *g)
 		break;
 
 	case FRAME_LEAF:
-		(void) win_resize(p->win, &p->geom);
+		(void) win_resize(p->win, &p->geom,
+			FRAME_BORDER, FRAME_SPACING);
 
 		for (w = p->u.windows; w != NULL; w = w->next) {
 			/* TODO: win_resize() on each w->win here */
@@ -66,7 +67,8 @@ frame_scale(struct frame *p, const struct ratio *r)
 		break;
 
 	case FRAME_LEAF:
-		(void) win_resize(p->win, &p->geom);
+		(void) win_resize(p->win, &p->geom,
+			FRAME_BORDER, FRAME_SPACING);
 
 		for (w = p->u.windows; w != NULL; w = w->next) {
 			/* TODO: win_resize() on each w->win here */
@@ -133,13 +135,15 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	layout_split(layout, order, &new->geom, &old->geom);
 
 	if (new->type == FRAME_LEAF) {
-		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS);
+		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
+			FRAME_BORDER, FRAME_SPACING);
 		if (!new->win) {
 			return NULL;
 		}
 
 		/* TODO: maybe set window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
-		(void) win_resize(old->win, &old->geom);
+		(void) win_resize(old->win, &old->geom,
+			FRAME_BORDER, FRAME_SPACING);
 	}
 
 	switch (order) {
@@ -242,7 +246,8 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 		return NULL;
 	}
 
-	new->win = win_create(geom, FRAME_NAME, FRAME_CLASS);
+	new->win = win_create(geom, FRAME_NAME, FRAME_CLASS,
+		FRAME_BORDER, FRAME_SPACING);
 	if (!new->win) {
 		free(new);
 		return NULL;

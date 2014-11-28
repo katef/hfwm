@@ -4,6 +4,10 @@
 struct window;
 struct geom;
 
+#define FRAME_MARGIN  10
+#define FRAME_BORDER  5
+#define FRAME_SPACING 5
+
 enum rel {
 	REL_SIBLING,
 	REL_LINEAGE

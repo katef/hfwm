@@ -16,7 +16,8 @@
 #include "win.h"
 
 Window
-win_create(const struct geom *geom, const char *name, const char *class)
+win_create(const struct geom *geom, const char *name, const char *class,
+	unsigned int bw, unsigned int spacing)
 {
 	Window win;
 	unsigned long valuemask;
@@ -47,13 +48,13 @@ win_create(const struct geom *geom, const char *name, const char *class)
 		exit(EXIT_FAILURE);
 	}
 
-	if (-1 == geom_inner(&in, geom, WIN_BORDER)) {
+	if (-1 == geom_inner(&in, geom, bw, spacing)) {
 		return (Window) 0x0;
 	}
 
 	win = XCreateWindow(display, root,
 		in.x, in.y, in.w, in.h,
-		WIN_BORDER,
+		bw,
 		CopyFromParent, /* XXX: why not InputOutput? */
 		CopyFromParent,
 		CopyFromParent,
@@ -92,13 +93,14 @@ win_destroy(Window win)
 }
 
 int
-win_resize(Window win, const struct geom *geom)
+win_resize(Window win, const struct geom *geom,
+	unsigned int bw, unsigned int spacing)
 {
 	struct geom in;
 
 	assert(geom != NULL);
 
-	if (-1 == geom_inner(&in, geom, WIN_BORDER)) {
+	if (-1 == geom_inner(&in, geom, bw, spacing)) {
 		return -1;
 	}
 

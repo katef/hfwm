@@ -6,26 +6,27 @@
 #include "geom.h"
 
 int
-geom_inner(struct geom *in, const struct geom *g, unsigned int bw)
+geom_inner(struct geom *in, const struct geom *g,
+	unsigned int bw, unsigned int spacing)
 {
 	assert(in != NULL);
 	assert(g != NULL);
 
-	if (g->h <= bw * 2) {
+	if (g->h <= bw * 2 + spacing * 2) {
 		errno = ERANGE;
 		return -1;
 	}
 
-	if (g->w <= bw * 2) {
+	if (g->w <= bw * 2 + spacing * 2) {
 		errno = ERANGE;
 		return -1;
 	}
 
-	in->x = g->x;
-	in->y = g->y;
+	in->x = g->x + spacing;
+	in->y = g->y + spacing;
 
-	in->w = g->w - bw * 2;
-	in->h = g->h - bw * 2;
+	in->w = g->w - bw * 2 - spacing * 2;
+	in->h = g->h - bw * 2 - spacing * 2;
 
 	return 0;
 }

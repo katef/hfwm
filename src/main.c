@@ -167,6 +167,11 @@ main(void)
 		return 1;
 	}
 
+	if (-1 == geom_inner(&g, &g, 0, FRAME_MARGIN - FRAME_SPACING)) {
+		perror("geom_inner");
+		return 1;
+	}
+
 	current_frame = frame_create_leaf(NULL, &g, NULL);
 	if (current_frame == NULL) {
 		perror("frame_create");

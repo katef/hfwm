@@ -3,21 +3,21 @@
 
 #include <X11/Xlib.h>
 
-#define WIN_BORDER 2
-
 struct window {
 	/* TODO: placeholder */
 	struct window *next;
 };
 
 Window
-win_create(const struct geom *geom, const char *name, const char *class);
+win_create(const struct geom *geom, const char *name, const char *class,
+	unsigned int bw, unsigned int spacing);
 
 void
 win_destroy(Window win);
 
 int
-win_resize(Window win, const struct geom *geom);
+win_resize(Window win, const struct geom *geom,
+	unsigned int bw, unsigned int spacing);
 
 void
 win_border(Window win, const char *colour);
