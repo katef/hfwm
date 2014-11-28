@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 
 #include <X11/Xlib.h>
@@ -13,33 +14,6 @@
 #include "main.h"
 #include "geom.h"
 #include "win.h"
-
-#include <stdio.h> /* XXX */
-
-static int
-inner(struct geom *in, const struct geom *g)
-{
-	assert(in != NULL);
-	assert(g != NULL);
-
-	if (g->h <= WIN_BORDER * 2) {
-		errno = ERANGE;
-		return -1;
-	}
-
-	if (g->w <= WIN_BORDER * 2) {
-		errno = ERANGE;
-		return -1;
-	}
-
-	in->x = g->x;
-	in->y = g->y;
-
-	in->w = g->w - WIN_BORDER * 2;
-	in->h = g->h - WIN_BORDER * 2;
-
-	return 0;
-}
 
 Window
 win_create(const struct geom *geom, const char *name, const char *class)
@@ -73,7 +47,7 @@ win_create(const struct geom *geom, const char *name, const char *class)
 		exit(EXIT_FAILURE);
 	}
 
-	if (-1 == inner(&in, geom)) {
+	if (-1 == geom_inner(&in, geom, WIN_BORDER)) {
 		return (Window) 0x0;
 	}
 
@@ -118,7 +92,7 @@ win_resize(Window win, const struct geom *geom)
 
 	assert(geom != NULL);
 
-	if (-1 == inner(&in, geom)) {
+	if (-1 == geom_inner(&in, geom, WIN_BORDER)) {
 		return -1;
 	}
 

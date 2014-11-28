@@ -1,8 +1,34 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
+#include <errno.h>
 
 #include "geom.h"
+
+int
+geom_inner(struct geom *in, const struct geom *g, unsigned int bw)
+{
+	assert(in != NULL);
+	assert(g != NULL);
+
+	if (g->h <= bw * 2) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	if (g->w <= bw * 2) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	in->x = g->x;
+	in->y = g->y;
+
+	in->w = g->w - bw * 2;
+	in->h = g->h - bw * 2;
+
+	return 0;
+}
 
 void
 geom_ratio(struct ratio *r, const struct geom *old, const struct geom *new)
