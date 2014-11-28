@@ -17,16 +17,16 @@
 #include <stdio.h> /* XXX */
 
 static void
-outer(struct geom *o, const struct geom *g)
+inner(struct geom *in, const struct geom *g)
 {
-	assert(o != NULL);
+	assert(in != NULL);
 	assert(g != NULL);
 
-	o->x = g->x;
-	o->y = g->y;
+	in->x = g->x;
+	in->y = g->y;
 
-	o->w = g->w - WIN_BORDER * 2;
-	o->h = g->h - WIN_BORDER * 2;
+	in->w = g->w - WIN_BORDER * 2;
+	in->h = g->h - WIN_BORDER * 2;
 }
 
 Window
@@ -41,7 +41,7 @@ win_create(const struct geom *geom, const char *name, const char *class)
 	XClassHint class_hints;
 	char *argv[] = { NULL };
 	char *client = hostname;
-	struct geom o;
+	struct geom in;
 
 	assert(geom != NULL);
 	assert(name != NULL);
@@ -61,10 +61,10 @@ win_create(const struct geom *geom, const char *name, const char *class)
 		exit(EXIT_FAILURE);
 	}
 
-	outer(&o, geom);
+	inner(&in, geom);
 
 	win = XCreateWindow(display, root,
-		o.x, o.y, o.w, o.h,
+		in.x, in.y, in.w, in.h,
 		WIN_BORDER,
 		CopyFromParent, /* XXX: why not InputOutput? */
 		CopyFromParent,
@@ -102,14 +102,14 @@ win_create(const struct geom *geom, const char *name, const char *class)
 void
 win_resize(Window win, const struct geom *geom)
 {
-	struct geom o;
+	struct geom in;
 
 	assert(geom != NULL);
 
-	outer(&o, geom);
+	inner(&in, geom);
 
 	XMoveResizeWindow(display, win,
-		o.x, o.y, o.w, o.h);
+		in.x, in.y, in.w, in.h);
 }
 
 void
