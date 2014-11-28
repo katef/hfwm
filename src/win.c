@@ -21,7 +21,7 @@ win_create(const struct geom *geom, const char *name, const char *class)
 {
 	Window win;
 	unsigned long valuemask;
-    XSetWindowAttributes attrs;
+	XSetWindowAttributes attrs;
 	XTextProperty xtp_name, xtp_client;
 	XWMHints wm_hints;
 	XSizeHints size_hints;
