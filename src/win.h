@@ -4,7 +4,7 @@
 #include <X11/Xlib.h>
 
 struct window {
-	/* TODO: placeholder */
+	Window win;
 	struct window *next;
 };
 
@@ -27,6 +27,15 @@ win_geom(Window win, struct geom *geom);
 
 void
 win_cat(struct window **head, struct window **tail);
+
+struct window *
+win_find(const struct window *head, Window win);
+
+struct window *
+win_add(struct window **head, Window win);
+
+void
+win_remove(struct window **head, Window win);
 
 #endif
 
