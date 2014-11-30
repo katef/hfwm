@@ -71,7 +71,10 @@ void
 frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n);
 
 struct frame *
-frame_find(Window win, enum frame_type type);
+frame_find_win(const struct frame *top, Window win);
+
+struct frame *
+frame_find_client(const struct frame *top, Window win);
 
 #endif
 

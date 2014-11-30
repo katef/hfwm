@@ -372,8 +372,8 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 	frame_scale(next, &rb);
 }
 
-static struct frame *
-frame_findp(const struct frame *p, Window win, enum frame_type type)
+struct frame *
+frame_find_win(const struct frame *p, Window win)
 {
 	const struct frame *q;
 
@@ -381,14 +381,10 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 
 	switch (p->type) {
 	case FRAME_BRANCH:
-		if (p->win == win && p->type == type) {
-			return (struct frame *) p;
-		}
-
 		for (q = p->u.children; q != NULL; q = q->next) {
 			struct frame *r;
 
-			r = frame_findp(q, win, type);
+			r = frame_find_win(q, win);
 			if (r != NULL) {
 				return r;
 			}
@@ -396,7 +392,7 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 		break;
 
 	case FRAME_LEAF:
-		if (p->type == type && win_find(p->u.windows, win)) {
+		if (p->win == win) {
 			return (struct frame *) p;
 		}
 		break;
@@ -406,21 +402,31 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 }
 
 struct frame *
-frame_find(Window win, enum frame_type type)
+frame_find_client(const struct frame *p, Window win)
 {
-	const struct frame *top;
-	struct frame *r;
+	const struct frame *q;
 
-	top = frame_top();
+	assert(p != NULL);
 
-	r = frame_findp(top, win, type);
-	if (r == NULL) {
-		errno = ENOENT;
-		return NULL;
+	switch (p->type) {
+	case FRAME_BRANCH:
+		for (q = p->u.children; q != NULL; q = q->next) {
+			struct frame *r;
+
+			r = frame_find_client(q, win);
+			if (r != NULL) {
+				return r;
+			}
+		}
+		break;
+
+	case FRAME_LEAF:
+		if (win_find(p->u.windows, win)) {
+			return (struct frame *) p;
+		}
+		break;
 	}
 
-	assert(r->type == type);
-
-	return r;
+	return NULL;
 }
 
