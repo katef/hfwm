@@ -149,8 +149,8 @@ event_x11(void)
 
 		case DestroyNotify:
 			{
-				struct frame *r;
 				const struct frame *top;
+				struct frame *r;
 
 				top = frame_top();
 				assert(top != NULL);
@@ -165,7 +165,29 @@ event_x11(void)
 			break;
 
 		case EnterNotify:
-			fprintf(stderr, "enternotify id=%p\n", (void *) e.xcrossing.window);
+			{
+				const struct frame *top;
+				struct frame *r;
+
+				top = frame_top();
+				assert(top != NULL);
+
+				r = frame_find_win(top, e.xcrossing.window);
+				if (r == NULL) {
+					/* not a frame window */
+					continue;
+				}
+
+				/* TODO: setting for colours */
+
+				if (current_frame->type == FRAME_LEAF) {
+					win_border(current_frame->win, "#2222FF");
+				}
+
+				current_frame = r;
+
+				win_border(current_frame->win, "#FF2222");
+			}
 			break;
 
 		default:
