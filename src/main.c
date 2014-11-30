@@ -15,6 +15,7 @@
 #include <errno.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "main.h"
 #include "args.h"
@@ -101,6 +102,67 @@ event_x11(void)
 			}
 			break;
 
+		case CreateNotify:
+			if (current_frame->type != FRAME_LEAF) {
+				continue;
+			}
+
+			{
+				XClassHint xclass_hints;
+
+				if (0 == XGetClassHint(display, e.xcreatewindow.window, &xclass_hints)) {
+					perror("XGetClassHint");
+					continue;
+				}
+
+				if (0 != strcmp(xclass_hints.res_name, FRAME_NAME)) {
+					continue;
+				}
+
+				if (0 != strcmp(xclass_hints.res_class, FRAME_CLASS)) {
+					continue;
+				}
+			}
+
+			{
+				const struct frame *top;
+
+				top = frame_top();
+				assert(top != NULL);
+
+				if (frame_find_win(top, e.xcreatewindow.window)) {
+					/* our frame's window; disregard */
+					continue;
+				}
+			}
+
+			if (!win_add(&current_frame->u.windows, e.xcreatewindow.window)) {
+				perror("win_add");
+				continue;
+			}
+
+			XRaiseWindow(display, e.xcreatewindow.window);
+
+			XMapWindow(display, e.xcreatewindow.window);
+			break;
+
+		case DestroyNotify:
+			{
+				struct frame *r;
+				const struct frame *top;
+
+				top = frame_top();
+				assert(top != NULL);
+
+				r = frame_find_client(top, e.xcreatewindow.window);
+				if (r == NULL) {
+					continue;
+				}
+
+				win_remove(&r->u.windows, e.xcreatewindow.window);
+			}
+			break;
+
 		case EnterNotify:
 			fprintf(stderr, "enternotify id=%p\n", (void *) e.xcrossing.window);
 			break;
@@ -161,6 +223,9 @@ main(void)
 
 	x11 = ConnectionNumber(display);
 	ipc = ipc_listen(IPC_PATH);
+
+	XSelectInput(display, root,
+		SubstructureRedirectMask | SubstructureNotifyMask);
 
 	if (-1 == win_geom(root, &g)) {
 		perror("win_geom");
