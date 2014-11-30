@@ -5,7 +5,6 @@
 #include <errno.h>
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include "geom.h"
 #include "order.h"
@@ -16,10 +15,6 @@
 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
-
-/* for XClassHint */
-#define FRAME_NAME  "hfwm"
-#define FRAME_CLASS "Frame"
 
 static void
 frame_resize(struct frame *p, const struct geom *g)
@@ -384,12 +379,12 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 
 	assert(p != NULL);
 
-	if (p->win == win && p->type == type) {
-		return (struct frame *) p;
-	}
-
 	switch (p->type) {
 	case FRAME_BRANCH:
+		if (p->win == win && p->type == type) {
+			return (struct frame *) p;
+		}
+
 		for (q = p->u.children; q != NULL; q = q->next) {
 			struct frame *r;
 
@@ -401,6 +396,9 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 		break;
 
 	case FRAME_LEAF:
+		if (p->type == type && win_find(p->u.windows, win)) {
+			return (struct frame *) p;
+		}
 		break;
 	}
 
@@ -410,23 +408,8 @@ frame_findp(const struct frame *p, Window win, enum frame_type type)
 struct frame *
 frame_find(Window win, enum frame_type type)
 {
-	XClassHint xclass_hints;
 	const struct frame *top;
 	struct frame *r;
-
-	if (0 == XGetClassHint(display, win, &xclass_hints)) {
-		return NULL;
-	}
-
-	if (0 != strcmp(xclass_hints.res_name, FRAME_NAME)) {
-		errno = ENOENT;
-		return NULL;
-	}
-
-	if (0 != strcmp(xclass_hints.res_class, FRAME_CLASS)) {
-		errno = ENOENT;
-		return NULL;
-	}
 
 	top = frame_top();
 

@@ -8,6 +8,10 @@ struct geom;
 #define FRAME_BORDER  1
 #define FRAME_SPACING 2
 
+/* for XClassHint */
+#define FRAME_NAME  "hfwm"
+#define FRAME_CLASS "Frame"
+
 enum rel {
 	REL_SIBLING,
 	REL_LINEAGE
