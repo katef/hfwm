@@ -28,6 +28,7 @@
 #include "spawn.h"
 #include "key.h"
 #include "win.h"
+#include "client.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -136,7 +137,7 @@ event_x11(void)
 				}
 			}
 
-			if (!win_add(&current_frame->u.windows, e.xcreatewindow.window)) {
+			if (!client_add(&current_frame->u.clients, e.xcreatewindow.window)) {
 				perror("win_add");
 				continue;
 			}
@@ -159,7 +160,7 @@ event_x11(void)
 					continue;
 				}
 
-				win_remove(&r->u.windows, e.xcreatewindow.window);
+				client_remove(&r->u.clients, e.xcreatewindow.window);
 			}
 			break;
 

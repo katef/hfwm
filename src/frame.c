@@ -12,6 +12,7 @@
 #include "frame.h"
 #include "main.h"
 #include "win.h"
+#include "client.h"
 
 /* TODO: maybe lives in cmd.c */
 struct frame *current_frame;
@@ -20,7 +21,7 @@ static void
 frame_resize(struct frame *p, const struct geom *g)
 {
 	struct frame *q;
-	struct window *w;
+	struct client *c;
 
 	assert(p != NULL);
 	assert(g != NULL);
@@ -36,8 +37,8 @@ frame_resize(struct frame *p, const struct geom *g)
 		(void) win_resize(p->win, &p->geom,
 			FRAME_BORDER, FRAME_SPACING);
 
-		for (w = p->u.windows; w != NULL; w = w->next) {
-			/* TODO: win_resize() on each w->win here */
+		for (c = p->u.clients; c != NULL; c = c->next) {
+			/* TODO: win_resize() on each c->win here */
 		}
 		break;
 	}
@@ -49,7 +50,7 @@ static void
 frame_scale(struct frame *p, const struct ratio *r)
 {
 	struct frame *q;
-	struct window *w;
+	struct client *c;
 
 	assert(p != NULL);
 	assert(r != NULL);
@@ -65,8 +66,8 @@ frame_scale(struct frame *p, const struct ratio *r)
 		(void) win_resize(p->win, &p->geom,
 			FRAME_BORDER, FRAME_SPACING);
 
-		for (w = p->u.windows; w != NULL; w = w->next) {
-			/* TODO: win_resize() on each w->win here */
+		for (c = p->u.clients; c != NULL; c = c->next) {
+			/* TODO: win_resize() on each c->win here */
 		}
 		break;
 	}
@@ -128,7 +129,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 
 	switch (new->type) {
 	case FRAME_LEAF:
-		new->u.windows = NULL;
+		new->u.clients = NULL;
 		new->layout    = default_leaf_layout;
 		break;
 
@@ -147,7 +148,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 			return NULL;
 		}
 
-		/* TODO: maybe set window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
+		/* TODO: maybe set Window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
 		(void) win_resize(old->win, &old->geom,
 			FRAME_BORDER, FRAME_SPACING);
 	}
@@ -206,12 +207,12 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 	case FRAME_LEAF:
 		switch (order) {
 		case ORDER_NEXT:
-			win_cat(&p->u.windows, &old->u.windows);
+			client_cat(&p->u.clients, &old->u.clients);
 			break;
 
 		case ORDER_PREV:
-			win_cat(&old->u.windows, &p->u.windows);
-			p->u.windows = old->u.windows;
+			client_cat(&old->u.clients, &p->u.clients);
+			p->u.clients = old->u.clients;
 			break;
 		}
 		break;
@@ -241,7 +242,7 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 
 struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
-	struct window *windows)
+	struct client *clients)
 {
 	struct frame *new;
 
@@ -260,7 +261,7 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 	}
 
 	new->type      = FRAME_LEAF;
-	new->u.windows = windows;
+	new->u.clients = clients;
 
 	new->layout = default_leaf_layout;
 	new->geom   = *geom;
@@ -274,14 +275,14 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 
 struct frame *
 frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
-	struct window *windows)
+	struct client *clients)
 {
 	struct frame *a, *b;
 
 	assert(old != NULL);
 	assert(old->type == FRAME_LEAF);
 
-	a = frame_create_leaf(old, &old->geom, old->u.windows);
+	a = frame_create_leaf(old, &old->geom, old->u.clients);
 	if (a == NULL) {
 		return NULL;
 	}
@@ -292,13 +293,13 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 		return NULL;
 	}
 
-	b->u.windows = windows;
+	b->u.clients = clients;
 
 	old->type       = FRAME_BRANCH;
 	old->layout     = layout;
 	old->u.children = a; /* or b */
 
-	/* TODO: optimisation; transplant this to one of the leaves, instead of creating a new window */
+	/* TODO: optimisation; transplant this to one of the leaves, instead of creating a new Window */
 	win_destroy(old->win);
 
 	return b;
@@ -421,7 +422,7 @@ frame_find_client(const struct frame *p, Window win)
 		break;
 
 	case FRAME_LEAF:
-		if (win_find(p->u.windows, win)) {
+		if (client_find(p->u.clients, win)) {
 			return (struct frame *) p;
 		}
 		break;

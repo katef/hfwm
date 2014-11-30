@@ -1,7 +1,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-struct window;
+struct client;
 struct geom;
 
 #define FRAME_MARGIN  2
@@ -35,7 +35,7 @@ struct frame {
 	enum frame_type type;
 	union {
 		struct frame *children; /* list of zero or more children by .prev/.next */
-		struct window *windows; /* list of windows in this frame */
+		struct client *clients; /* list of managed client windows in this frame */
 	} u;
 };
 
@@ -58,11 +58,11 @@ frame_merge(struct frame *old, enum layout layout, enum order order);
 
 struct frame *
 frame_create_leaf(struct frame *parent, const struct geom *geom,
-	struct window *windows);
+	struct client *clients);
 
 struct frame *
 frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
-	struct window *windows);
+	struct client *clients);
 
 struct frame *
 frame_focus(struct frame *curr, enum rel rel, enum order order);
