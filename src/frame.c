@@ -106,6 +106,17 @@ rel_lookup(const char *s)
 }
 
 struct frame *
+frame_top(void)
+{
+	const struct frame *p;
+
+	for (p = current_frame; p->parent != NULL; p = p->parent)
+		;
+
+	return (struct frame *) p;
+}
+
+struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
 	struct frame *new;
@@ -400,7 +411,7 @@ struct frame *
 frame_find(Window win, enum frame_type type)
 {
 	XClassHint xclass_hints;
-	const struct frame *p;
+	const struct frame *top;
 	struct frame *r;
 
 	if (0 == XGetClassHint(display, win, &xclass_hints)) {
@@ -417,10 +428,9 @@ frame_find(Window win, enum frame_type type)
 		return NULL;
 	}
 
-	for (p = current_frame; p->parent != NULL; p = p->parent)
-		;
+	top = frame_top();
 
-	r = frame_findp(p, win, type);
+	r = frame_findp(top, win, type);
 	if (r == NULL) {
 		errno = ENOENT;
 		return NULL;

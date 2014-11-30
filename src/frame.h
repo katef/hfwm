@@ -41,6 +41,9 @@ enum rel
 rel_lookup(const char *s);
 
 struct frame *
+frame_top(void);
+
+struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order);
 
 void
