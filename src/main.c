@@ -29,6 +29,7 @@
 #include "key.h"
 #include "win.h"
 #include "client.h"
+#include "tile.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -109,23 +110,6 @@ event_x11(void)
 			}
 
 			{
-				XClassHint xclass_hints;
-
-				if (0 == XGetClassHint(display, e.xcreatewindow.window, &xclass_hints)) {
-					perror("XGetClassHint");
-					continue;
-				}
-
-				if (0 != strcmp(xclass_hints.res_name, FRAME_NAME)) {
-					continue;
-				}
-
-				if (0 != strcmp(xclass_hints.res_class, FRAME_CLASS)) {
-					continue;
-				}
-			}
-
-			{
 				const struct frame *top;
 
 				top = frame_top();
@@ -138,8 +122,17 @@ event_x11(void)
 			}
 
 			if (!client_add(&current_frame->u.clients, e.xcreatewindow.window)) {
-				perror("win_add");
+				perror("client_add");
 				continue;
+			}
+
+			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
+
+			/* TODO: would reparent here */
+
+			if (-1 == tile_resize(current_frame)) {
+				perror("layout_resize");
+				/* TODO */
 			}
 
 			XRaiseWindow(display, e.xcreatewindow.window);
