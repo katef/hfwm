@@ -39,16 +39,18 @@ layout_cycle(enum layout l, int delta)
 }
 
 void
-layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old)
+layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old,
+	unsigned int n)
 {
 	unsigned int orig;
 
 	assert(new != NULL);
 	assert(old != NULL);
+	assert(n >= 2);
 
 	switch (layout) {
 	case LAYOUT_HORIZ:
-		new->w = (orig = old->w, orig - (old->w /= 2));
+		new->w = (orig = old->w, orig - (old->w /= n));
 		new->h = old->h;
 		new->x = old->x;
 		new->y = old->y;
@@ -61,7 +63,7 @@ layout_split(enum layout layout, enum order order, struct geom *new, struct geom
 
 	case LAYOUT_VERT:
 		new->w = old->w;
-		new->h = (orig = old->h, orig - (old->h /= 2));
+		new->h = (orig = old->h, orig - (old->h /= n));
 		new->x = old->x;
 		new->y = old->y;
 

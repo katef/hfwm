@@ -2,6 +2,7 @@
 #define LAYOUT_H
 
 struct geom;
+struct client;
 
 enum layout {
 	LAYOUT_HORIZ,
@@ -21,13 +22,17 @@ enum layout
 layout_cycle(enum layout l, int delta);
 
 void
-layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old);
+layout_split(enum layout layout, enum order order, struct geom *new, struct geom *old,
+	unsigned int n);
 
 void
 layout_merge(enum order order, struct geom *dst, struct geom *src);
 
 void
 layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned n);
+
+int
+layout_resize(struct client *clients, const struct geom *geom);
 
 #endif
 

@@ -139,7 +139,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 		break;
 	}
 
-	layout_split(layout, order, &new->geom, &old->geom);
+	layout_split(layout, order, &new->geom, &old->geom, 2);
 
 	if (new->type == FRAME_LEAF) {
 		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
