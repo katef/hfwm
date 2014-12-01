@@ -126,9 +126,9 @@ event_x11(void)
 				continue;
 			}
 
-			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
+			XReparentWindow(display, e.xcreatewindow.window, current_frame->win, 0, 0);
 
-			/* TODO: would reparent here */
+			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
 
 			if (-1 == tile_resize(current_frame)) {
 				perror("layout_resize");
@@ -137,7 +137,6 @@ event_x11(void)
 
 			XRaiseWindow(display, e.xcreatewindow.window);
 
-			XMapWindow(display, e.xcreatewindow.window);
 			break;
 
 		case DestroyNotify:
@@ -154,6 +153,11 @@ event_x11(void)
 				}
 
 				client_remove(&r->u.clients, e.xcreatewindow.window);
+
+				if (-1 == tile_resize(r)) {
+					perror("layout_resize");
+					/* TODO */
+				}
 			}
 			break;
 

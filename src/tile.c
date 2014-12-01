@@ -10,6 +10,7 @@
 #include "frame.h"
 #include "client.h"
 #include "tile.h"
+#include "win.h"
 
 /* XXX: debugging stuff; no error checking */
 static void
@@ -72,24 +73,20 @@ tile_resize(const struct frame *p)
 	 */
 	{
 		struct geom new, old;
+		struct client *c;
 		unsigned n;
 
 		old = area;
 
-		for (n = client_count(p->u.clients); n > 0; n--) {
-			struct geom gin;
+		for (n = client_count(p->u.clients), c = p->u.clients; n > 0; n--, c = c->next) {
+			assert(c != NULL);
 
 			/* XXX: would rather ORDER_NEXT here. order should be an option passed to this function */
 			if (n >= 2) {
 				layout_split(p->layout, ORDER_PREV, &new, &old, n);
 			}
 
-			if (-1 == geom_inner(&gin, &old, TILE_BORDER, TILE_SPACING)) {
-				return -1;
-			}
-
-			/* TODO: win_resize() client window */
-			rectangle(XFillRectangle, p->win, &gin, "#444444");
+			win_resize(c->win, &old, TILE_BORDER, TILE_SPACING);
 
 			old = new;
 		}
