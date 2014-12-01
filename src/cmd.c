@@ -19,6 +19,7 @@
 #include "spawn.h"
 #include "key.h"
 #include "win.h"
+#include "tile.h"
 
 static int
 cmd_spawn(char *const argv[])
@@ -245,7 +246,10 @@ cmd_layout(char *const argv[])
 
 	current_frame->layout = layout;
 
-	/* TODO: redraw frame */
+	if (-1 == tile_resize(current_frame)) {
+		perror("tile_resize");
+		return -1;
+	}
 
 	return 0;
 }
