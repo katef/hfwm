@@ -6,6 +6,21 @@
 #include "geom.h"
 #include "client.h"
 
+unsigned int
+client_count(const struct client *clients)
+{
+	const struct client *p;
+	unsigned int n;
+
+	n = 0;
+
+	for (p = clients; p != NULL; p = p->next) {
+		n++;
+	}
+
+	return n;
+}
+
 void
 client_cat(struct client **head, struct client **tail)
 {

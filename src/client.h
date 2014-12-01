@@ -6,6 +6,9 @@ struct client {
 	struct client *next;
 };
 
+unsigned int
+client_count(const struct client *clients);
+
 void
 client_cat(struct client **head, struct client **tail);
 
