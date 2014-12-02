@@ -49,7 +49,7 @@ tile_resize(const struct frame *p)
 	area.h = p->geom.h;
 	area.w = p->geom.w;
 
-	if (-1 == geom_inner(&area, &area, TILE_MARGIN, TILE_SPACING + FRAME_SPACING + FRAME_BORDER)) {
+	if (-1 == geom_inner(&area, &area, FRAME_BORDER + FRAME_SPACING, TILE_MARGIN - TILE_SPACING)) {
 		return -1;
 	}
 
