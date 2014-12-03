@@ -1,4 +1,4 @@
-#define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 2
 
 #include <sys/types.h>
 #include <sys/select.h>
@@ -34,16 +34,14 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-char hostname[HOST_NAME_MAX];
+#define HFWM_VERSION "0.1"
+
+char *hostname;
 Display *display;
 Window root;
 
 #ifndef IPC_PATH
 #define IPC_PATH "/tmp/hfwm.sock"
-#endif
-
-#ifndef HFWM_STARTUP
-#define HFWM_STARTUP "startup.sh"
 #endif
 
 static int
@@ -248,22 +246,66 @@ event_ipc(int s)
 	}
 }
 
+static void
+usage(FILE *f)
+{
+	assert(f != NULL);
+
+	fprintf(f, "usage: hfwm [-f <startup>] [-m <hostname>] {-s <ipc path>}\n");
+	fprintf(f, "       hfwm {-h | -v}\n");
+}
+
 int
-main(void)
+main(int argc, char *argv[])
 {
 	int x11, ipc;
 	struct geom g;
+	char *startup;
+	const char *ipc_path;
 
-	if (-1 == gethostname(hostname, sizeof hostname)) {
-		perror("gethostname");
-		return 1;
+	/* defaults */
+	startup  = NULL;
+	hostname = NULL;
+	ipc_path = IPC_PATH;
+
+	{
+		int c;
+
+		while (c = getopt(argc, argv, "hv" "f:m:s:"), c != -1) {
+			switch (c) {
+			case 'f': startup  = optarg; break;
+			case 'm': hostname = optarg; break;
+			case 's': ipc_path = optarg; break;
+
+			case 'h':
+				usage(stdout);
+				return 0;
+
+			case 'v':
+				printf("hfwm %s", HFWM_VERSION);
+				return 0;
+
+			case '?':
+			default:
+				usage(stderr);
+				return 1;
+			}
+		}
+
+		argc -= optind;
+		argv += optind;
+
+		if (argc > 0) {
+			usage(stderr);
+			return 1;
+		}
 	}
 
 	display = XOpenDisplay(NULL);
 	root    = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	x11 = ConnectionNumber(display);
-	ipc = ipc_listen(IPC_PATH);
+	ipc = ipc_listen(ipc_path);
 
 	XSelectInput(display, root,
 		SubstructureRedirectMask | SubstructureNotifyMask);
@@ -284,8 +326,8 @@ main(void)
 		return 1;
 	}
 
-	{
-		char *argv[] = { HFWM_STARTUP, NULL };
+	if (startup != NULL) {
+		char *argv[] = { startup, NULL };
 
 		if (-1 == spawn(argv)) {
 			perror(argv[0]);

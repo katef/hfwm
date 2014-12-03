@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-extern char hostname[];
+char *hostname;
 
 Display *display;
 Window root;

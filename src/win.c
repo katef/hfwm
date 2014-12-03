@@ -27,7 +27,6 @@ win_create(const struct geom *geom, const char *name, const char *class,
 	XSizeHints size_hints;
 	XClassHint class_hints;
 	char *argv[] = { NULL };
-	char *client = hostname;
 	struct geom in;
 
 	assert(geom != NULL);
@@ -39,11 +38,6 @@ win_create(const struct geom *geom, const char *name, const char *class,
 	attrs.event_mask = EnterWindowMask;
 
 	if (0 == XStringListToTextProperty((char **) &name, 1, &xtp_name)) {
-		perror("XStringListToTextProperty");
-		exit(EXIT_FAILURE);
-	}
-
-	if (0 == XStringListToTextProperty(&client, 1, &xtp_client)) {
 		perror("XStringListToTextProperty");
 		exit(EXIT_FAILURE);
 	}
@@ -79,7 +73,14 @@ win_create(const struct geom *geom, const char *name, const char *class,
 	 * know that, if there even is one. I'm setting the hostname instead,
 	 * because at least that might be a useful reminder for a human.
 	 */
-	XSetWMClientMachine(display, win, &xtp_client);
+	if (hostname != NULL) {
+		if (0 == XStringListToTextProperty(&hostname, 1, &xtp_client)) {
+			perror("XStringListToTextProperty");
+			exit(EXIT_FAILURE);
+		}
+
+		XSetWMClientMachine(display, win, &xtp_client);
+	}
 
 	XMapWindow(display, win);
 
