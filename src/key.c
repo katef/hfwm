@@ -2,9 +2,30 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include <X11/X.h>
+
 #include "key.h"
 
 static struct key *keys;
+
+int
+button_mask(int n)
+{
+	static const int mask[] = {
+		Button1Mask,
+		Button2Mask,
+		Button3Mask,
+		Button4Mask,
+		Button5Mask
+	};
+
+	if (n < 0 || n > sizeof mask / sizeof *mask) {
+		errno = ERANGE;
+		return 0;
+	}
+
+	return mask[n];
+}
 
 struct key *
 key_find(unsigned int keycode, int mod)

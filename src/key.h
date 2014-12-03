@@ -14,6 +14,9 @@ struct key {
 	struct key *next;
 };
 
+int
+button_mask(int n);
+
 struct key *
 key_find(unsigned int keycode, int mod);
 

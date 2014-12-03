@@ -13,7 +13,6 @@
 #include "geom.h"
 #include "order.h"
 #include "layout.h"
-#include "button.h"
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
@@ -88,20 +87,26 @@ cmd_mousebind(char *const argv[])
 	int mod;
 	int button;
 	char *e;
-	struct button *p;
+	struct key *p;
 	char **args;
+	int mask;
 
 	/* TODO: parse for mod */
 	mod = MOD;
 
 	button = strtol(argv[0], &e, 10);
-	if (button < 0 || button == ULONG_MAX || button > BUTTON_MAX) {
+	if (button < 0 || button == ULONG_MAX) {
 		errno = ERANGE;
 		return -1;
 	}
 
 	if (*e != '\0') {
 		errno = EINVAL;
+		return -1;
+	}
+
+	mask = button_mask(button);
+	if (mask == 0) {
 		return -1;
 	}
 
@@ -112,7 +117,7 @@ cmd_mousebind(char *const argv[])
 		return -1;
 	}
 
-	p = button_provision(button, mod);
+	p = key_provision(AnyKey, mask | mod);
 	if (p == NULL) {
 		goto error;
 	}

@@ -15,14 +15,12 @@
 #include <errno.h>
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include "args.h"
 #include "cmd.h"
 #include "geom.h"
 #include "order.h"
 #include "layout.h"
-#include "button.h"
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
@@ -107,9 +105,17 @@ event_x11(void)
 		case ButtonPress:
 		case ButtonRelease:
 			{
-				struct button *p;
+				struct key *p;
+				int mask;
 
-				p = button_find(e.xbutton.button, e.xkey.state);
+				mask = button_mask(e.xbutton.button);
+				if (mask == 0) {
+					perror("button_mask");
+					continue;
+				}
+
+				/* TODO: might need to look up e.xbutton.button */
+				p = key_find(AnyKey, mask | e.xbutton.state);
 				if (p == NULL) {
 					continue;
 				}

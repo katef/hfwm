@@ -1,7 +1,6 @@
 .include "../share/mk/top.mk"
 
 SRC += src/args.c
-SRC += src/button.c
 SRC += src/chain.c
 SRC += src/client.c
 SRC += src/cmd.c
