@@ -190,6 +190,8 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 
 	assert(p != NULL);
 
+	(void) layout;
+
 	old = order == ORDER_NEXT ? p->next : p->prev;
 	if (old == NULL) {
 		return p;
