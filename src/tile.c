@@ -59,12 +59,14 @@ tile_resize(const struct frame *p)
 	area.h -= 30;
 #endif
 
+/* XXX: set frame window background instead
 	rectangle(XFillRectangle, p->win, &area, "#22FF22");
+*/
 
 	/*
 	 * This is worth some explanation.
 	 *
-	 * The approach here is to progressively divide the area unevenly
+	 * The approach here is to progressively divide the area evenly
 	 * into n parts, and to place a client at the first 1/nth of that space.
 	 * The remaining area is then divided into n - 1 parts, and so on.
 	 *
