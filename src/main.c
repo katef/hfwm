@@ -114,7 +114,6 @@ event_x11(void)
 					continue;
 				}
 
-				/* TODO: might need to look up e.xbutton.button */
 				p = key_find(AnyKey, mask | e.xbutton.state);
 				if (p == NULL) {
 					continue;
