@@ -37,16 +37,34 @@ cmd_spawn(char *const argv[])
 static int
 cmd_keybind(char *const argv[])
 {
-	int mod;
 	KeySym ks;
 	unsigned int kc;
 	struct key *p;
 	char **args;
+	char *s, *e;
+	int mod;
 
-	/* TODO: parse for mod */
-	mod = MOD;
+	mod = 0;
 
-	ks = XStringToKeysym(argv[0]);
+	for (s = argv[0]; strchr(s, '-'); e++, s = e) {
+		char tmp;
+		int m;
+
+		e = s + strcspn(s, "-");
+
+		tmp = *e;
+		*e = '\0';
+		m = key_mod(s);
+		*e = tmp;
+		if (m == 0) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		mod |= m;
+	}
+
+	ks = XStringToKeysym(s);
 	if (ks == NoSymbol) {
 		return -1;
 	}
