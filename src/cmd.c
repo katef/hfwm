@@ -20,6 +20,8 @@
 #include "key.h"
 #include "win.h"
 #include "tile.h"
+#include "args.h"
+#include "chain.h"
 
 static int
 cmd_spawn(char *const argv[])
@@ -40,6 +42,8 @@ cmd_keybind(char *const argv[])
 	int mod;
 	KeySym ks;
 	unsigned int kc;
+	struct key *p;
+	char **args;
 
 	/* TODO: parse for mod */
 	mod = MOD;
@@ -56,11 +60,27 @@ cmd_keybind(char *const argv[])
 
 	XGrabKey(display, kc, mod, root, True, GrabModeAsync, GrabModeAsync);
 
-	if (-1 == key_bind(kc, mod, argv + 1)) {
+	args = args_clone(argv + 1);
+	if (args == NULL) {
 		return -1;
 	}
 
+	p = key_provision(kc, mod);
+	if (p == NULL) {
+		goto error;
+	}
+
+	if (!chain_append(&p->chain, args)) {
+		goto error;
+	}
+
 	return 0;
+
+error:
+
+	free(args);
+
+	return -1;
 }
 
 static int
@@ -69,6 +89,8 @@ cmd_mousebind(char *const argv[])
 	int mod;
 	int button;
 	char *e;
+	struct button *p;
+	char **args;
 
 	/* TODO: parse for mod */
 	mod = MOD;
@@ -86,11 +108,27 @@ cmd_mousebind(char *const argv[])
 
 	XGrabButton(display, button, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 
-	if (-1 == button_bind(button, mod, argv + 1)) {
+	args = args_clone(argv + 1);
+	if (args == NULL) {
 		return -1;
 	}
 
+	p = button_provision(button, mod);
+	if (p == NULL) {
+		goto error;
+	}
+
+	if (!chain_append(&p->chain, args)) {
+		goto error;
+	}
+
 	return 0;
+
+error:
+
+	free(args);
+
+	return -1;
 }
 
 static int
@@ -309,6 +347,7 @@ cmd_dispatch(char *const argv[])
 		if (0 == strcmp(a[i].cmd, argv[0])) {
 			if (-1 == a[i].f(argv + 1)) {
 				perror(argv[0]);
+/* TODO: bail out */
 			}
 
 			return 0;
