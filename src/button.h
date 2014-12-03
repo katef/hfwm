@@ -5,11 +5,19 @@
 #define BUTTON_MAX 16 /* XXX: from X? */
 #endif
 
-int
-button_bind(int button, int mod, char *const argv[]);
+struct chain;
 
-int
-button_dispatch(int button, int mod);
+struct button {
+	int mod;
+	struct chain *chain;
+	struct button *next;
+};
+
+struct button *
+button_find(int button, int mod);
+
+struct button *
+button_provision(int button, int mod);
 
 #endif
 

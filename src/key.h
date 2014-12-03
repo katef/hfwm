@@ -1,11 +1,20 @@
 #ifndef KEY_H
 #define KEY_H
 
-int
-key_bind(unsigned int keycode, int mod, char *const argv[]);
+struct chain;
 
-int
-key_dispatch(unsigned int keycode, int mod);
+struct key {
+	unsigned int keycode;
+	int mod;
+	struct chain *chain;
+	struct key *next;
+};
+
+struct key *
+key_find(unsigned int keycode, int mod);
+
+struct key *
+key_provision(unsigned int keycode, int mod);
 
 #endif
 

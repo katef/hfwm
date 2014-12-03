@@ -30,6 +30,7 @@
 #include "win.h"
 #include "client.h"
 #include "tile.h"
+#include "chain.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -92,15 +93,35 @@ event_x11(void)
 
 		switch (e.type) {
 		case KeyPress:
-			if (-1 == key_dispatch(e.xkey.keycode, e.xkey.state)) {
-				perror("key_dispatch");
+			{
+				struct key *p;
+
+				p = key_find(e.xkey.keycode, e.xkey.state);
+				if (p == NULL) {
+					continue;
+				}
+
+				if (-1 == chain_dispatch(p->chain)) {
+					perror("chain_dispatch"); /* XXX: better error message */
+					continue;
+				}
 			}
 			break;
 
 		case ButtonPress:
 		case ButtonRelease:
-			if (-1 == button_dispatch(e.xbutton.button, e.xbutton.state)) {
-				perror("button_dispatch");
+			{
+				struct button *p;
+
+				p = button_find(e.xbutton.button, e.xkey.state);
+				if (p == NULL) {
+					continue;
+				}
+
+				if (-1 == chain_dispatch(p->chain)) {
+					perror("chain_dispatch"); /* XXX: better error message */
+					continue;
+				}
 			}
 			break;
 
