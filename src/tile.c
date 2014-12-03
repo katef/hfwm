@@ -3,7 +3,6 @@
 
 #include <X11/Xlib.h>
 
-#include "main.h"
 #include "geom.h"
 #include "order.h"
 #include "layout.h"

@@ -17,7 +17,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "main.h"
 #include "args.h"
 #include "cmd.h"
 #include "geom.h"
@@ -36,7 +35,6 @@
 
 #define HFWM_VERSION "0.1"
 
-char *hostname;
 Display *display;
 Window root;
 

@@ -1,6 +1,11 @@
 #ifndef WIN_H
 #define WIN_H
 
+extern char *hostname;
+
+extern Display *display;
+extern Window root;
+
 Window
 win_create(const struct geom *geom, const char *name, const char *class,
 	unsigned int bw, unsigned int spacing);

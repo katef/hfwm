@@ -11,9 +11,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "main.h"
 #include "geom.h"
 #include "win.h"
+
+char *hostname; /* for WM_CLIENT_MACHINE */
+
+Display *display;
+Window root;
 
 Window
 win_create(const struct geom *geom, const char *name, const char *class,

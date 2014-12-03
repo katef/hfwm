@@ -1,6 +1,10 @@
 #ifndef KEY_H
 #define KEY_H
 
+#ifndef MOD
+#define MOD Mod4Mask
+#endif
+
 struct chain;
 
 struct key {

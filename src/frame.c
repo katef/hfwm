@@ -10,7 +10,6 @@
 #include "order.h"
 #include "layout.h"
 #include "frame.h"
-#include "main.h"
 #include "win.h"
 #include "client.h"
 
