@@ -88,6 +88,42 @@ mod_lookup(const char *s)
 	return 0;
 }
 
+int
+mod_prefix(char *s, char **end)
+{
+	char *e;
+	int button;
+	int mod;
+
+	assert(s != NULL);
+
+	mod = 0;
+
+	for ( ; strchr(s, '-'); e++, s = e) {
+		char tmp;
+		int m;
+
+		e = s + strcspn(s, "-");
+
+		tmp = *e;
+		*e = '\0';
+		m = mod_lookup(s);
+		*e = tmp;
+		if (m == 0) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		mod |= m;
+	}
+
+	if (end != NULL) {
+		*end = s;
+	}
+
+	return mod;
+}
+
 struct key *
 key_find(unsigned int keycode, int mod)
 {

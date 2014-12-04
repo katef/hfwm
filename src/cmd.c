@@ -40,28 +40,13 @@ cmd_bind(char *const argv[])
 	unsigned int kc;
 	struct key *p;
 	char **args;
-	char *s, *e;
+	char *s;
 	int button;
 	int mod;
 
-	mod = 0;
-
-	for (s = argv[0]; strchr(s, '-'); e++, s = e) {
-		char tmp;
-		int m;
-
-		e = s + strcspn(s, "-");
-
-		tmp = *e;
-		*e = '\0';
-		m = mod_lookup(s);
-		*e = tmp;
-		if (m == 0) {
-			errno = EINVAL;
-			return -1;
-		}
-
-		mod |= m;
+	mod = mod_prefix(argv[0], &s);
+	if (mod == -1) {
+		return -1;
 	}
 
 	button = button_lookup(s);

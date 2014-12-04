@@ -23,6 +23,9 @@ button_mask(int n);
 int
 mod_lookup(const char *s);
 
+int
+mod_prefix(char *s, char **e);
+
 struct key *
 key_find(unsigned int keycode, int mod);
 
