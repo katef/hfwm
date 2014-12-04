@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdio.h> /* XXX */
 
 #include <X11/X.h>
 
@@ -91,22 +92,20 @@ mod_lookup(const char *s)
 int
 mod_prefix(const char *s, const char **e)
 {
-	int mod;
 	size_t n;
+	int mod;
 
 	assert(s != NULL);
 
 	mod = 0;
 
-	for ( ; strchr(s, '-'); s += n + 1) {
+	for ( ; ; s += n + 1) {
 		char buf[16];
 		int m;
 
 		n = strcspn(s, "-");
-
-		if (n > (signed) sizeof buf - 1) {
-			errno = EINVAL;
-			return -1;
+		if (n == 0 || n > sizeof buf - 1) {
+			break;
 		}
 
 		memcpy(buf, s, n);
@@ -114,8 +113,7 @@ mod_prefix(const char *s, const char **e)
 
 		m = mod_lookup(buf);
 		if (m == 0) {
-			errno = EINVAL;
-			return -1;
+			break;
 		}
 
 		mod |= m;

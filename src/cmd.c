@@ -45,8 +45,15 @@ cmd_bind(char *const argv[])
 	int mod;
 
 	mod = mod_prefix(argv[0], &s);
-	if (mod == -1) {
-		return -1;
+	{
+		size_t n;
+
+		n = strcspn(s, "-");
+		if (s[n] != '\0') {
+			fprintf(stderr, "unrecognised modifier: %.*s\n", (int) n, s);
+			errno = EINVAL;
+			return -1;
+		}
 	}
 
 	button = button_lookup(s);
