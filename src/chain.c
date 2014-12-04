@@ -46,3 +46,15 @@ chain_dispatch(const struct chain *chain)
 	return 0;
 }
 
+void
+chain_free(struct chain *chain)
+{
+	struct chain *p, *next;
+
+	for (p = chain; p != NULL; p = next) {
+		next = p->next;
+		free(p->argv);
+		free(p);
+	}
+}
+
