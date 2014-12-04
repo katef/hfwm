@@ -35,13 +35,13 @@ cmd_spawn(char *const argv[])
 }
 
 static int
-cmd_keybind(char *const argv[])
+cmd_bind(char *const argv[])
 {
-	KeySym ks;
 	unsigned int kc;
 	struct key *p;
 	char **args;
 	char *s, *e;
+	int button;
 	int mod;
 
 	mod = 0;
@@ -54,7 +54,7 @@ cmd_keybind(char *const argv[])
 
 		tmp = *e;
 		*e = '\0';
-		m = key_mod(s);
+		m = mod_lookup(s);
 		*e = tmp;
 		if (m == 0) {
 			errno = EINVAL;
@@ -64,21 +64,35 @@ cmd_keybind(char *const argv[])
 		mod |= m;
 	}
 
-	ks = XStringToKeysym(s);
-	if (ks == NoSymbol) {
-		return -1;
-	}
+	button = button_lookup(s);
+	if (button == 0) {
+		KeySym ks;
 
-	kc = XKeysymToKeycode(display, ks);
-	if (kc == 0) {
-		return -1;
-	}
+		ks = XStringToKeysym(s);
+		if (ks == NoSymbol) {
+			return -1;
+		}
 
-	XGrabKey(display, kc, mod, root, True, GrabModeAsync, GrabModeAsync);
+		kc = XKeysymToKeycode(display, ks);
+		if (kc == 0) {
+			return -1;
+		}
 
-	args = args_clone(argv + 1);
-	if (args == NULL) {
-		return -1;
+		XGrabKey(display, kc, mod, root, True,
+			GrabModeAsync, GrabModeAsync);
+	} else {
+		int mask;
+
+		mask = button_mask(button);
+		if (mask == 0) {
+			return -1;
+		}
+
+		XGrabButton(display, button, mod, root, True, ButtonPressMask,
+			GrabModeAsync, GrabModeAsync, None, None);
+
+		kc = AnyKey;
+		mod |= mask;
 	}
 
 	p = key_provision(kc, mod);
@@ -86,58 +100,9 @@ cmd_keybind(char *const argv[])
 		goto error;
 	}
 
-	if (!chain_append(&p->chain, args)) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-
-	free(args);
-
-	return -1;
-}
-
-static int
-cmd_mousebind(char *const argv[])
-{
-	int mod;
-	int button;
-	char *e;
-	struct key *p;
-	char **args;
-	int mask;
-
-	/* TODO: parse for mod */
-	mod = MOD;
-
-	button = strtol(argv[0], &e, 10);
-	if (button < 0 || button == ULONG_MAX) {
-		errno = ERANGE;
-		return -1;
-	}
-
-	if (*e != '\0') {
-		errno = EINVAL;
-		return -1;
-	}
-
-	mask = button_mask(button);
-	if (mask == 0) {
-		return -1;
-	}
-
-	XGrabButton(display, button, mod, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-
 	args = args_clone(argv + 1);
 	if (args == NULL) {
 		return -1;
-	}
-
-	p = key_provision(AnyKey, mask | mod);
-	if (p == NULL) {
-		goto error;
 	}
 
 	if (!chain_append(&p->chain, args)) {
@@ -348,14 +313,13 @@ cmd_dispatch(char *const argv[])
 		const char *cmd;
 		int (*f)(char *const []);
 	} a[] = {
-		{ "keybind",   cmd_keybind   },
-		{ "mousebind", cmd_mousebind },
-		{ "spawn",     cmd_spawn     },
-		{ "split",     cmd_split     },
-		{ "merge",     cmd_merge     },
-		{ "focus",     cmd_focus     },
-		{ "layout",    cmd_layout    },
-		{ "redist",    cmd_redist    }
+		{ "bind",   cmd_bind   },
+		{ "spawn",  cmd_spawn  },
+		{ "split",  cmd_split  },
+		{ "merge",  cmd_merge  },
+		{ "focus",  cmd_focus  },
+		{ "layout", cmd_layout },
+		{ "redist", cmd_redist }
 	};
 
 	assert(argv != NULL);

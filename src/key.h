@@ -15,10 +15,13 @@ struct key {
 };
 
 int
+button_lookup(const char *s);
+
+int
 button_mask(int n);
 
 int
-key_mod(const char *s);
+mod_lookup(const char *s);
 
 struct key *
 key_find(unsigned int keycode, int mod);

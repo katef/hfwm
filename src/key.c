@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 
@@ -8,27 +9,50 @@
 
 static struct key *keys;
 
-int
-button_mask(int n)
-{
-	static const int mask[] = {
-		Button1Mask,
-		Button2Mask,
-		Button3Mask,
-		Button4Mask,
-		Button5Mask
-	};
+static const struct {
+	const char *name;
+	int button;
+	int mask;
+} buttons[] = {
+	{ "Button1", Button1, Button1Mask },
+	{ "Button2", Button2, Button2Mask },
+	{ "Button3", Button3, Button3Mask },
+	{ "Button4", Button4, Button4Mask },
+	{ "Button5", Button5, Button5Mask }
+};
 
-	if (n < 0 || n > sizeof mask / sizeof *mask) {
-		errno = ERANGE;
-		return 0;
+int
+button_lookup(const char *s)
+{
+	size_t i;
+
+	assert(s != NULL);
+
+	for (i = 0; i < sizeof buttons / sizeof *buttons; i++) {
+		if (0 == strcmp(buttons[i].name, s)) {
+			return buttons[i].button;
+		}
 	}
 
-	return mask[n];
+	return 0;
 }
 
 int
-key_mod(const char *s)
+button_mask(int n)
+{
+	size_t i;
+
+	for (i = 0; i < sizeof buttons / sizeof *buttons; i++) {
+		if (buttons[i].button == n) {
+			return buttons[i].mask;
+		}
+	}
+
+	return 0;
+}
+
+int
+mod_lookup(const char *s)
 {
 	size_t i;
 
@@ -44,13 +68,7 @@ key_mod(const char *s)
 		{ "Mod2",    Mod2Mask    },
 		{ "Mod3",    Mod3Mask    },
 		{ "Mod4",    Mod4Mask    },
-		{ "Mod5",    Mod5Mask    },
-
-		{ "Button1", Button1Mask },
-		{ "Button2", Button2Mask },
-		{ "Button3", Button3Mask },
-		{ "Button4", Button4Mask },
-		{ "Button5", Button5Mask }
+		{ "Mod5",    Mod5Mask    }
 	};
 
 	assert(s != NULL);
@@ -58,6 +76,12 @@ key_mod(const char *s)
 	for (i = 0; i < sizeof a / sizeof *a; i++) {
 		if (0 == strcmp(s, a[i].s)) {
 			return a[i].mod;
+		}
+	}
+
+	for (i = 0; i < sizeof buttons / sizeof *buttons; i++) {
+		if (0 == strcmp(s, buttons[i].name)) {
+			return buttons[i].mask;
 		}
 	}
 

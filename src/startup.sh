@@ -14,24 +14,31 @@ randcol() {
 }
 
 hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
-hc keybind b spawn randbg # script for same as above
+hc bind b spawn randbg # script for same as above
 
-hc keybind a spawn xterm
-hc mousebind 1 spawn xterm
-hc mousebind 3 spawn xterm
+hc bind x spawn xclock
+hc bind Mod4-x spawn xeyes
 
-hc keybind q split next vert
-hc keybind w split next horiz
-hc keybind e split prev vert
-hc keybind r split prev horiz
-hc keybind t merge prev
-hc keybind y merge next
-hc keybind u redist prev 10
-hc keybind i redist next 10
+#exit 0
 
-hc keybind h focus sibling next
-hc keybind j focus sibling prev
-hc keybind k focus lineage next
-hc keybind l focus lineage prev
-hc keybind c layout next
+#hc bind a spawn xterm
+hc bind a spawn xlogo
+hc bind z spawn xclock
+hc bind Button1 spawn xterm
+hc bind Button3 spawn xterm
+
+hc bind q split next vert
+hc bind w split next horiz
+hc bind e split prev vert
+hc bind r split prev horiz
+hc bind t merge prev
+hc bind y merge next
+hc bind u redist prev 10
+hc bind i redist next 10
+
+hc bind h focus sibling next
+hc bind j focus sibling prev
+hc bind k focus lineage next
+hc bind l focus lineage prev
+hc bind c layout next
 

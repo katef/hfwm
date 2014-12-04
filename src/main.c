@@ -110,7 +110,7 @@ event_x11(void)
 
 				mask = button_mask(e.xbutton.button);
 				if (mask == 0) {
-					perror("button_mask");
+					fprintf(stderr, "unrecognised button %d\n", e.xbutton.button);
 					continue;
 				}
 
