@@ -120,7 +120,7 @@ cmd_split(char *const argv[])
 	assert(current_frame != NULL);
 
 	order = order_lookup(argv[0]);
-	if (order == -1) {
+	if ((int) order == -1) {
 		return -1;
 	}
 
@@ -177,7 +177,7 @@ cmd_merge(char *const argv[])
 	assert(current_frame != NULL);
 
 	order = order_lookup(argv[0]);
-	if (order == -1) {
+	if ((int) order == -1) {
 		return -1;
 	}
 
@@ -214,12 +214,12 @@ cmd_focus(char *const argv[])
 	}
 
 	rel = rel_lookup(argv[0]);
-	if (rel == -1) {
+	if ((int) rel == -1) {
 		return -1;
 	}
 
 	order = order_lookup(argv[1]);
-	if (order == -1) {
+	if ((int) order == -1) {
 		return -1;
 	}
 
@@ -245,11 +245,11 @@ cmd_layout(char *const argv[])
 	enum order order;
 
 	layout = layout_lookup(argv[0]);
-	if (layout == -1) {
+	if ((int) layout == -1) {
 		int delta;
 
 		order = order_lookup(argv[0]);
-		if (order == -1) {
+		if ((int) order == -1) {
 			return -1;
 		}
 
@@ -279,7 +279,7 @@ cmd_redist(char *const argv[])
 	unsigned n;
 
 	order = order_lookup(argv[0]);
-	if (order == -1) {
+	if ((int) order == -1) {
 		return -1;
 	}
 
