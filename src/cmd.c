@@ -40,7 +40,7 @@ cmd_bind(char *const argv[])
 	unsigned int kc;
 	struct key *p;
 	char **args;
-	char *s;
+	const char *s;
 	int button;
 	int mod;
 

@@ -89,10 +89,9 @@ mod_lookup(const char *s)
 }
 
 int
-mod_prefix(char *s, char **end)
+mod_prefix(const char *s, const char **end)
 {
-	char *e;
-	int button;
+	const char *e;
 	int mod;
 
 	assert(s != NULL);
@@ -100,15 +99,20 @@ mod_prefix(char *s, char **end)
 	mod = 0;
 
 	for ( ; strchr(s, '-'); e++, s = e) {
-		char tmp;
+		char buf[16];
 		int m;
 
 		e = s + strcspn(s, "-");
 
-		tmp = *e;
-		*e = '\0';
-		m = mod_lookup(s);
-		*e = tmp;
+		if (e - s > (signed) sizeof buf - 1) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		memcpy(buf, s, e - s);
+		buf[e - s] = '\0';
+
+		m = mod_lookup(buf);
 		if (m == 0) {
 			errno = EINVAL;
 			return -1;
