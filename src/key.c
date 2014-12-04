@@ -80,12 +80,6 @@ mod_lookup(const char *s)
 		}
 	}
 
-	for (i = 0; i < sizeof buttons / sizeof *buttons; i++) {
-		if (0 == strcmp(s, buttons[i].name)) {
-			return buttons[i].mask;
-		}
-	}
-
 	return 0;
 }
 
