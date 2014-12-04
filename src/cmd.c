@@ -40,45 +40,10 @@ cmd_bind(char *const argv[])
 	unsigned int kc;
 	struct key *p;
 	char **args;
-	const char *s;
-	int button;
 	int mod;
 
-	mod = mod_prefix(argv[0], &s);
-	{
-		size_t n;
-
-		n = strcspn(s, "-");
-		if (s[n] != '\0') {
-			fprintf(stderr, "unrecognised modifier: %.*s\n", (int) n, s);
-			errno = EINVAL;
-			return -1;
-		}
-	}
-
-	button = button_lookup(s);
-	if (button == 0) {
-		KeySym ks;
-
-		ks = XStringToKeysym(s);
-		if (ks == NoSymbol) {
-			return -1;
-		}
-
-		kc = XKeysymToKeycode(display, ks);
-		if (kc == 0) {
-			return -1;
-		}
-	} else {
-		int mask;
-
-		mask = button_mask(button);
-		if (mask == 0) {
-			return -1;
-		}
-
-		kc = AnyKey;
-		mod |= mask;
+	if (-1 == key_code(argv[0], &kc, &mod)) {
+		return -1;
 	}
 
 	p = key_provision(kc, mod);

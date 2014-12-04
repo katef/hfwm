@@ -26,6 +26,9 @@ mod_lookup(const char *s);
 int
 mod_prefix(const char *s, const char **e);
 
+int
+key_code(const char *s, unsigned int *kc, int *mod);
+
 struct key *
 key_find(unsigned int keycode, int mod);
 

@@ -2,10 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <stdio.h> /* XXX */
+#include <stdio.h>
 
 #include <X11/X.h>
+#include <X11/Xutil.h>
 
+#include "geom.h"
+#include "win.h"
 #include "key.h"
 
 static struct key *keys;
@@ -118,6 +121,56 @@ mod_prefix(const char *s, const char **e)
 	}
 
 	return mod;
+}
+
+int
+key_code(const char *s, unsigned int *kc, int *mod)
+{
+	const char *e;
+	int button;
+
+	assert(s != NULL);
+	assert(kc != NULL);
+	assert(mod != NULL);
+
+	*mod = mod_prefix(s, &e);
+	{
+		size_t n;
+
+		n = strcspn(e, "-");
+		if (e[n] != '\0') {
+			fprintf(stderr, "unrecognised modifier: %.*s\n", (int) n, e);
+			errno = EINVAL;
+			return -1;
+		}
+	}
+
+	button = button_lookup(e);
+	if (button == 0) {
+		KeySym ks;
+
+		ks = XStringToKeysym(e);
+		if (ks == NoSymbol) {
+			return -1;
+		}
+
+		*kc = XKeysymToKeycode(display, ks);
+		if (*kc == 0) {
+			return -1;
+		}
+	} else {
+		int mask;
+
+		mask = button_mask(button);
+		if (mask == 0) {
+			return -1;
+		}
+
+		*kc = AnyKey;
+		*mod |= mask;
+	}
+
+	return 0;
 }
 
 struct key *
