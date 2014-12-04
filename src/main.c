@@ -311,7 +311,9 @@ main(int argc, char *argv[])
 	ipc = ipc_listen(ipc_path);
 
 	XSelectInput(display, root,
-		SubstructureRedirectMask | SubstructureNotifyMask);
+		KeyPressMask
+		| ButtonPressMask
+		| SubstructureRedirectMask | SubstructureNotifyMask);
 
 	if (-1 == win_geom(root, &g)) {
 		perror("win_geom");

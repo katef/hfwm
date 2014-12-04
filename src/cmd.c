@@ -69,9 +69,6 @@ cmd_bind(char *const argv[])
 		if (kc == 0) {
 			return -1;
 		}
-
-		XGrabKey(display, kc, mod, root, True,
-			GrabModeAsync, GrabModeAsync);
 	} else {
 		int mask;
 
@@ -79,9 +76,6 @@ cmd_bind(char *const argv[])
 		if (mask == 0) {
 			return -1;
 		}
-
-		XGrabButton(display, button, mod, root, True, ButtonPressMask,
-			GrabModeAsync, GrabModeAsync, None, None);
 
 		kc = AnyKey;
 		mod |= mask;
