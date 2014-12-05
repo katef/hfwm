@@ -70,6 +70,37 @@ error:
 }
 
 static int
+cmd_unbind(char *const argv[])
+{
+	unsigned int kc;
+	struct key *p;
+	int mod;
+
+	if (argv[0] == NULL) {
+		for (p = keys; p != NULL; p = p->next) {
+			chain_free(p->chain);
+			p->chain = NULL;
+		}
+
+		return 0;
+	}
+
+	if (-1 == key_code(argv[0], &kc, &mod)) {
+		return -1;
+	}
+
+	p = key_find(kc, mod);
+	if (p == NULL) {
+		return 0;
+	}
+
+	chain_free(p->chain);
+	p->chain = NULL;
+
+	return 0;
+}
+
+static int
 cmd_split(char *const argv[])
 {
 	struct frame *new;
@@ -265,6 +296,7 @@ cmd_dispatch(char *const argv[])
 		int (*f)(char *const []);
 	} a[] = {
 		{ "bind",   cmd_bind   },
+		{ "unbind", cmd_unbind },
 		{ "spawn",  cmd_spawn  },
 		{ "split",  cmd_split  },
 		{ "merge",  cmd_merge  },

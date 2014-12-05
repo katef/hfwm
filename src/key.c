@@ -11,7 +11,7 @@
 #include "win.h"
 #include "key.h"
 
-static struct key *keys;
+struct key *keys;
 
 static const struct {
 	const char *name;

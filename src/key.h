@@ -14,6 +14,8 @@ struct key {
 	struct key *next;
 };
 
+extern struct key *keys;
+
 int
 button_lookup(const char *s);
 
