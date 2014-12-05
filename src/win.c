@@ -33,14 +33,19 @@ win_create(const struct geom *geom, const char *name, const char *class,
 	XClassHint class_hints;
 	char *argv[] = { NULL };
 	struct geom in;
+	XVisualInfo vinfo;
+
+const char *bg = NULL;
 
 	assert(geom != NULL);
 	assert(name != NULL);
 	assert(class != NULL);
 
-	valuemask = CWEventMask;
+	valuemask = CWEventMask | CWBackPixel;
 
 	attrs.event_mask = EnterWindowMask;
+
+/* XXX: want to do this in a seperate function i think. or maybe as external event handling */
 
 	if (0 == XStringListToTextProperty((char **) &name, 1, &xtp_name)) {
 		perror("XStringListToTextProperty");
@@ -51,12 +56,46 @@ win_create(const struct geom *geom, const char *name, const char *class,
 		return (Window) 0x0;
 	}
 
+	if (bg != NULL) {
+		Colormap cm;
+		XColor col;
+
+		cm = DefaultColormap(display, 0);
+
+		XParseColor(display, cm, bg, &col);
+		XAllocColor(display, cm, &col);
+
+		attrs.background_pixel = col.pixel;
+
+		vinfo.depth  = CopyFromParent;
+		vinfo.visual = CopyFromParent;
+
+		valuemask |= CWBackPixel;
+	} else {
+		Colormap cm;
+
+		XMatchVisualInfo(display, screen, 32, TrueColor, &vinfo);
+
+		cm = XCreateColormap(display, root, vinfo.visual, AllocNone);
+
+		/*
+		 * XXX: why is this alpha pixel mutually exclusive with a colour value?
+		 * Can't I have RGBA instead of 100% transparency?
+		 * Apparently I can use GLX for this.
+		 */
+
+		attrs.colormap         = cm;
+		attrs.background_pixel = 0;
+
+		valuemask |= CWColormap | CWBackPixel;
+	}
+
 	win = XCreateWindow(display, root,
 		in.x, in.y, in.w, in.h,
 		bw,
-		CopyFromParent, /* XXX: why not InputOutput? */
-		CopyFromParent,
-		CopyFromParent,
+		vinfo.depth,
+		InputOutput,
+		vinfo.visual,
 		valuemask, &attrs);
 
 	class_hints.res_name  = "hfwm"; /* note not WM_NAME */
