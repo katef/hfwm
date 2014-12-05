@@ -13,32 +13,47 @@ randcol() {
 	| ( read n; echo $(( 4 + $n % 2 )) )
 }
 
-hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
-hc bind b spawn randbg # script for same as above
+MOD=Mod4
 
-hc bind x spawn xclock
-hc bind Mod4-x spawn xeyes
+#hc unbind x
+hc unbind
+
+hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
+hc bind $MOD-b spawn randbg # script for same as above
+
+hc bind $MOD-Shift-x       spawn xeyes
+hc bind $MOD-Ctrl-x        spawn xlogo
+hc bind $MOD-Shift-Ctrl-x  spawn xclock
+hc bind $MOD-x             spawn xcalc
 
 #exit 0
 
-#hc bind a spawn xterm
-hc bind a spawn xlogo
-hc bind z spawn xclock
-hc bind Button1 spawn xterm
-hc bind Button3 spawn xterm
+#hc bind $MOD-a spawn xterm
+hc bind $MOD-a spawn xlogo
+hc bind $MOD-z spawn xclock
+hc bind $MOD-Button1 spawn xeyes +shape
+hc bind $MOD-Button2 spawn xeyes +shape
+hc bind $MOD-Button3 spawn xeyes +shape
+hc bind $MOD-Button4 spawn xeyes +shape
+hc bind $MOD-Button5 spawn xeyes +shape
 
-hc bind q split next vert
-hc bind w split next horiz
-hc bind e split prev vert
-hc bind r split prev horiz
-hc bind t merge prev
-hc bind y merge next
-hc bind u redist prev 10
-hc bind i redist next 10
+#exit 0;
 
-hc bind h focus sibling next
-hc bind j focus sibling prev
-hc bind k focus lineage next
-hc bind l focus lineage prev
-hc bind c layout next
+hc bind $MOD-q split next vert
+hc bind $MOD-w split next horiz
+hc bind $MOD-e split prev vert
+hc bind $MOD-r split prev horiz
+hc bind $MOD-t merge prev
+hc bind $MOD-y merge next
+hc bind $MOD-u redist prev 10
+hc bind $MOD-i redist next 10
+
+hc bind $MOD-j focus prev sibling
+hc bind $MOD-h focus next sibling
+hc bind $MOD-l focus prev lineage
+hc bind $MOD-k focus next lineage
+hc bind $MOD-f focus prev client
+hc bind $MOD-g focus next client
+
+hc bind $MOD-c layout next
 

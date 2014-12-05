@@ -141,6 +141,8 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	layout_split(layout, order, &new->geom, &old->geom, 2);
 
 	if (new->type == FRAME_LEAF) {
+		new->current_client = NULL;
+
 		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
 			FRAME_BORDER, FRAME_SPACING);
 		if (!new->win) {
@@ -260,6 +262,8 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 		free(new);
 		return NULL;
 	}
+
+	new->current_client = NULL;
 
 	new->type      = FRAME_LEAF;
 	new->u.clients = clients;

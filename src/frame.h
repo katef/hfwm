@@ -30,7 +30,9 @@ struct frame {
 	enum layout layout;   /* layout for .u.children or .u.window list */
 	struct geom geom;
 
-	Window win; /* only for FRAME_LEAF */
+	/* only for FRAME_LEAF */
+	Window win;
+	struct client *current_client;
 
 	enum frame_type type;
 	union {

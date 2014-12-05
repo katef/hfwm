@@ -20,6 +20,7 @@
 #include "tile.h"
 #include "args.h"
 #include "chain.h"
+#include "client.h"
 
 static int
 cmd_spawn(char *const argv[])
@@ -192,37 +193,59 @@ cmd_merge(char *const argv[])
 static int
 cmd_focus(char *const argv[])
 {
-	struct frame *new;
 	enum order order;
-	enum rel rel;
 
-	/* TODO: -f -w for frame/window siblings */
-
-	/* TODO: setting for inactive colour */
-	if (current_frame->type == FRAME_LEAF) {
-		win_border(current_frame->win, "#222222");
-	}
-
-	rel = rel_lookup(argv[0]);
-	if ((int) rel == -1) {
-		return -1;
-	}
-
-	order = order_lookup(argv[1]);
+	order = order_lookup(argv[0]);
 	if ((int) order == -1) {
 		return -1;
 	}
 
-	new = frame_focus(current_frame, rel, order);
-	if (new == NULL) {
-		return -1;
-	}
+	if (0 == strcmp(argv[1], "client")) {
+		struct client *new;
 
-	current_frame = new;
+		if (current_frame->type != FRAME_LEAF) {
+			return 0;
+		}
 
-	/* TODO: setting for active colour */
-	if (current_frame->type == FRAME_LEAF) {
-		win_border(current_frame->win, "#EE2222");
+		/* TODO: setting for inactive colour */
+		if (current_frame->current_client != NULL) {
+			win_border(current_frame->current_client->win, "#228822");
+		}
+
+		new = client_cycle(current_frame->u.clients, current_frame->current_client, order);
+
+		current_frame->current_client = new;
+
+		if (current_frame->current_client != NULL) {
+			win_border(current_frame->current_client->win, "#22FF22");
+		}
+	} else {
+		struct frame *new;
+		enum rel rel;
+
+		rel = rel_lookup(argv[1]);
+		if ((int) rel == -1) {
+			return -1;
+		}
+
+		assert(current_frame != NULL);
+
+		/* TODO: setting for inactive colour */
+		if (current_frame->type == FRAME_LEAF) {
+			win_border(current_frame->win, "#222222");
+		}
+
+		new = frame_focus(current_frame, rel, order);
+		if (new == NULL) {
+			return -1;
+		}
+
+		current_frame = new;
+
+		/* TODO: setting for active colour */
+		if (current_frame->type == FRAME_LEAF) {
+			win_border(current_frame->win, "#EE2222");
+		}
 	}
 
 	return 0;

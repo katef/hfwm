@@ -143,9 +143,17 @@ event_x11(void)
 				}
 			}
 
-			if (!client_add(&current_frame->u.clients, e.xcreatewindow.window)) {
-				perror("client_add");
-				continue;
+			{
+				struct client *new;
+
+				new = client_add(&current_frame->u.clients, e.xcreatewindow.window);
+				if (new == NULL) {
+					perror("client_add");
+					continue;
+				}
+
+/* TODO: would call cmd_focus by window new->win Window ID here */
+				current_frame->current_client = new;
 			}
 
 			XReparentWindow(display, e.xcreatewindow.window, current_frame->win, 0, 0);
@@ -157,6 +165,7 @@ event_x11(void)
 				/* TODO */
 			}
 
+/* XXX: to be done by cmd_focus */
 			XRaiseWindow(display, e.xcreatewindow.window);
 
 			break;
