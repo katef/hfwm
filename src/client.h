@@ -21,5 +21,9 @@ client_add(struct client **head, Window win);
 void
 client_remove(struct client **head, Window win);
 
+struct client *
+client_cycle(const struct client *head, const struct client *current_client,
+	enum order order);
+
 #endif
 

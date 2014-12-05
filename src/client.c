@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 
 #include "geom.h"
+#include "order.h"
 #include "client.h"
 
 unsigned int
@@ -88,5 +89,38 @@ client_remove(struct client **head, Window win)
 			return;
 		}
 	}
+}
+
+struct client *
+client_cycle(const struct client *head, const struct client *current_client,
+	enum order order)
+{
+	const struct client *p;
+
+	if (current_client == NULL) {
+		return NULL;
+	}
+
+	assert(client_find(head, current_client->win));
+
+	switch (order) {
+	case ORDER_PREV:
+		for (p = head; p->next != NULL; p = p->next) {
+			if (p->next == current_client) {
+				return (struct client *) p;
+			}
+		}
+
+		return (struct client *) p;
+
+	case ORDER_NEXT:
+		if (current_client->next == NULL) {
+			return (struct client *) head;
+		}
+
+		return (struct client *) current_client->next;
+	}
+
+	return NULL;
 }
 
