@@ -3,6 +3,7 @@
 
 extern char *hostname;
 
+extern int screen;
 extern Display *display;
 extern Window root;
 

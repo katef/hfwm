@@ -16,6 +16,7 @@
 
 char *hostname; /* for WM_CLIENT_MACHINE */
 
+int screen;
 Display *display;
 Window root;
 

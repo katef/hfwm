@@ -314,6 +314,7 @@ main(int argc, char *argv[])
 	}
 
 	display = XOpenDisplay(NULL);
+	screen  = DefaultScreen(display);
 	root    = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	x11 = ConnectionNumber(display);
