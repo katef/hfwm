@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h> /* XXX */
 
 #include <X11/Xlib.h>
 
@@ -10,31 +9,6 @@
 #include "client.h"
 #include "tile.h"
 #include "win.h"
-
-/* XXX: debugging stuff; no error checking */
-static void
-rectangle(int (*f)(Display *, Drawable, GC, int, int, unsigned int, unsigned int),
-	Window win, struct geom *geom, const char *colour)
-{
-	Colormap cm;
-	XColor col;
-	GC gc;
-
-	assert(f != NULL);
-	assert(geom != NULL);
-	assert(colour != NULL);
-
-	cm = DefaultColormap(display, 0);
-
-	gc = XCreateGC(display, win, 0, 0);
-	XParseColor(display, cm, colour, &col);
-	XAllocColor(display, cm, &col);
-	XSetForeground(display, gc, col.pixel);
-
-	f(display, win, gc, geom->x, geom->y, geom->w, geom->h);
-
-	XFlush(display);
-}
 
 int
 tile_resize(const struct frame *p)
@@ -57,10 +31,6 @@ tile_resize(const struct frame *p)
 	area.y += 30;
 	area.h -= 30;
 #endif
-
-/* XXX: set frame window background instead
-	rectangle(XFillRectangle, p->win, &area, "#22FF22");
-*/
 
 	/*
 	 * This is worth some explanation.
