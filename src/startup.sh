@@ -1,6 +1,26 @@
 #!/bin/sh -e
 
+# An example for setup and event automation for hfwm.
+#
+# This is as close as it gets to a configuration file for hfwm. There's no
+# particular reason for this to be written as a shell script; if you want to
+# do something more complex, then use whatever language seems suitable.
+#
+# Communication with hfwm is by IPC, over SOCK_DGRAM sockets in the AF_LOCAL.
+# This script sets up a few things and then listens for incoming events.
+# These things could be done by seperate scripts if you prefer; I've just put
+# everything here so that it's easier to see what's involved.
+#
+# Things this script depends on:
+#
+#   socat    - for IPC. If you use a language with sockets, you won't need it.
+#   xcompmgr - for rendering transparency
+#   transset - for changing transparency per window
+#   hsetroot - it's a bit nicer than xsetroot
+#
+
 IPC_PATH=${IPC_PATH:-/tmp/hfwm.sock}
+SUB_PATH=${SUB_PATH:-/tmp/hfwm-$$.sock}
 
 hc() {
 	echo -n $* | socat -t0 unix-sendto:$IPC_PATH stdin
@@ -13,47 +33,89 @@ randcol() {
 	| ( read n; echo $(( 4 + $n % 2 )) )
 }
 
+# This is usually the diamond key for a Sun, the command key for a mac, and the
+# windows key for a PC. The idea here is that all window manager stuff strictly
+# only uses this modifier, leaving everything else for applications.
+#
+# To show your current bindings: xmodmap -pm
 MOD=Mod4
 
-#hc unbind x
 hc unbind
 
-hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
-hc bind $MOD-b spawn randbg # script for same as above
+{
+	sed 's/#.*$//' \
+	| while read key cmd; do
+		if [ -z $key ]; then
+			continue
+		fi
 
-hc bind $MOD-Shift-x       spawn xeyes
-hc bind $MOD-Ctrl-x        spawn xlogo
-hc bind $MOD-Shift-Ctrl-x  spawn xclock
-hc bind $MOD-x             spawn xcalc
+		# The idea here is to be consistent about using shift to mean
+		# "the same thing, but backwards"
+		if { echo "$cmd" | grep -q next; }; then
+			prev="`echo $cmd | sed s/next/prev/g`"
+			hc bind Shift-$MOD-$key $prev
+		fi
 
-#exit 0
+		hc bind $MOD-$key $cmd
 
-#hc bind $MOD-a spawn xterm
-hc bind $MOD-a spawn xlogo
-hc bind $MOD-z spawn xclock
-hc bind $MOD-Button1 spawn xeyes +shape
-hc bind $MOD-Button2 spawn xeyes +shape
-hc bind $MOD-Button3 spawn xeyes +shape
-hc bind $MOD-Button4 spawn xeyes +shape
-hc bind $MOD-Button5 spawn xeyes +shape
+	done
+} <<EOF
+	Shift-x       spawn xeyes +shape
+	Ctrl-x        spawn xlogo
+	Shift-Ctrl-x  spawn xclock
+	x             spawn xcalc
+	f             spawn xfd -fn fixed
 
-#exit 0;
+	a spawn xterm
+	a spawn xlogo
+	z spawn xclock
 
-hc bind $MOD-q split next vert
-hc bind $MOD-w split next horiz
-hc bind $MOD-e split prev vert
-hc bind $MOD-r split prev horiz
-hc bind $MOD-t merge prev
-hc bind $MOD-y merge next
-hc bind $MOD-u redist prev 10
-hc bind $MOD-i redist next 10
+	# Mouse buttons are considered keys.
+	# You can use modifiers with them, too.
+	Button1 spawn xclock -hd red
+	Button2 spawn xclock -hd green
+	Button3 spawn xclock -hd blue
+	Button4 spawn xclock -hd purple
+	Button5 spawn xclock -hd yellow
 
-hc bind $MOD-j focus prev sibling
-hc bind $MOD-h focus next sibling
-hc bind $MOD-l focus prev lineage
-hc bind $MOD-k focus next lineage
-hc bind $MOD-f focus prev client
-hc bind $MOD-g focus next client
+	q split next vert
+	w split next horiz
 
-hc bind $MOD-c layout next
+	t merge next
+
+	u redist next 10
+
+	h focus next sibling
+	k focus next lineage
+	g focus next client
+
+	grave layout next
+EOF
+
+pkill xcompmgr
+xcompmgr -n &
+
+#hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
+
+rm -f $SUB_PATH
+socat UNIX-RECV:$SUB_PATH stdout \
+| {
+	hc subscribe $SUB_PATH
+	while read event args; do
+		echo event $event, args $args
+		case "$event" in
+		enter)
+			transset -i $args --inc
+			;;
+
+		leave)
+			transset -i $args --dec
+			;;
+
+		*)
+			echo unhandled event: $event $args >&2
+			;;
+		esac
+	done
+}
 
