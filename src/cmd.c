@@ -21,6 +21,22 @@
 #include "args.h"
 #include "chain.h"
 #include "client.h"
+#include "event.h"
+
+static int
+cmd_subscribe(char *const argv[])
+{
+	unsigned int mask;
+
+	mask = ~0U; /* TODO: parse from argv[1] */
+
+	if (-1 == event_subscribe(argv[0], mask)) {
+		perror(argv[0]);
+		return -1;
+	}
+
+	return 0;
+}
 
 static int
 cmd_spawn(char *const argv[])
@@ -318,14 +334,15 @@ cmd_dispatch(char *const argv[])
 		const char *cmd;
 		int (*f)(char *const []);
 	} a[] = {
-		{ "bind",   cmd_bind   },
-		{ "unbind", cmd_unbind },
-		{ "spawn",  cmd_spawn  },
-		{ "split",  cmd_split  },
-		{ "merge",  cmd_merge  },
-		{ "focus",  cmd_focus  },
-		{ "layout", cmd_layout },
-		{ "redist", cmd_redist }
+		{ "subscribe", cmd_subscribe },
+		{ "bind",      cmd_bind      },
+		{ "unbind",    cmd_unbind    },
+		{ "spawn",     cmd_spawn     },
+		{ "split",     cmd_split     },
+		{ "merge",     cmd_merge     },
+		{ "focus",     cmd_focus     },
+		{ "layout",    cmd_layout    },
+		{ "redist",    cmd_redist    }
 	};
 
 	assert(argv != NULL);
