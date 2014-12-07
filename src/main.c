@@ -343,7 +343,10 @@ main(int argc, char *argv[])
 	}
 
 	if (startup != NULL) {
-		char *argv[] = { startup, NULL };
+		char *argv[2];
+
+		argv[0] = startup;
+		argv[1] = NULL;
 
 		if (-1 == setenv(IPC_ENV, ipc_path, 1)) {
 			perror("setenv");
