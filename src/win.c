@@ -159,22 +159,6 @@ win_resize(Window win, const struct geom *geom,
 	return 0;
 }
 
-void
-win_border(Window win, const char *colour)
-{
-	Colormap cm;
-	XColor col;
-
-	assert(colour != NULL);
-
-	cm = DefaultColormap(display, 0);
-
-	XParseColor(display, cm, colour, &col);
-	XAllocColor(display, cm, &col);
-
-	XSetWindowBorder(display, win, col.pixel);
-}
-
 int
 win_geom(Window win, struct geom *geom)
 {

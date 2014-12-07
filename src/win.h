@@ -18,9 +18,6 @@ int
 win_resize(Window win, const struct geom *geom,
 	unsigned int bw, unsigned int spacing);
 
-void
-win_border(Window win, const char *colour);
-
 int
 win_geom(Window win, struct geom *geom);
 
