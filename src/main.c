@@ -164,8 +164,6 @@ event_x11(void)
 				current_frame->current_client = new;
 			}
 
-			XReparentWindow(display, e.xcreatewindow.window, current_frame->win, 0, 0);
-
 			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
 
 			if (-1 == tile_resize(current_frame)) {
