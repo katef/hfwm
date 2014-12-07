@@ -223,17 +223,13 @@ event_x11(void)
 				/* TODO: setting for colours */
 
 				if (current_frame->type == FRAME_LEAF) {
-					win_border(current_frame->win, "#2222FF");
-
-					event_issue(EVENT_CROSSING, "leave %p",
+					event_issue(EVENT_CROSSING, "leave frame %p",
 						(void *) current_frame->win);
 				}
 
 				current_frame = r;
 
-				win_border(current_frame->win, "#FF2222");
-
-				event_issue(EVENT_CROSSING, "enter %p",
+				event_issue(EVENT_CROSSING, "enter frame %p",
 					(void *) e.xcrossing.window);
 			}
 			break;

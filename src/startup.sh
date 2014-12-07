@@ -107,14 +107,25 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 | {
 	hc subscribe $HFWM_SUB
 	while read event args; do
-		echo event $event, args $args
+		echo event=$event, args=$args
+
 		case "$event" in
 		enter)
-			transset -i $args --inc > /dev/null
+			echo $args | {
+				read target id
+				if [ $target = frame ]; then
+					transset -i $id --inc > /dev/null
+				fi
+			}
 			;;
 
 		leave)
-			transset -i $args --dec > /dev/null
+			echo $args | {
+				read target id
+				if [ $target = frame ]; then
+					transset -i $id --dec > /dev/null
+				fi
+			}
 			;;
 
 		*)

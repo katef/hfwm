@@ -223,9 +223,9 @@ cmd_focus(char *const argv[])
 			return 0;
 		}
 
-		/* TODO: setting for inactive colour */
 		if (current_frame->current_client != NULL) {
-			win_border(current_frame->current_client->win, "#228822");
+			event_issue(EVENT_CROSSING, "leave client %p",
+				(void *) current_frame->current_client->win);
 		}
 
 		new = client_cycle(current_frame->u.clients, current_frame->current_client, order);
@@ -233,7 +233,8 @@ cmd_focus(char *const argv[])
 		current_frame->current_client = new;
 
 		if (current_frame->current_client != NULL) {
-			win_border(current_frame->current_client->win, "#22FF22");
+			event_issue(EVENT_CROSSING, "enter client %p",
+				(void *) current_frame->current_client->win);
 		}
 	} else {
 		struct frame *new;
@@ -246,9 +247,9 @@ cmd_focus(char *const argv[])
 
 		assert(current_frame != NULL);
 
-		/* TODO: setting for inactive colour */
 		if (current_frame->type == FRAME_LEAF) {
-			win_border(current_frame->win, "#222222");
+			event_issue(EVENT_CROSSING, "leave frame %p",
+				(void *) current_frame->win);
 		}
 
 		new = frame_focus(current_frame, rel, order);
@@ -260,7 +261,8 @@ cmd_focus(char *const argv[])
 
 		/* TODO: setting for active colour */
 		if (current_frame->type == FRAME_LEAF) {
-			win_border(current_frame->win, "#EE2222");
+			event_issue(EVENT_CROSSING, "enter frame %p",
+				(void *) current_frame->win);
 		}
 	}
 
