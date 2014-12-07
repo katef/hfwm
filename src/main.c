@@ -171,6 +171,11 @@ event_x11(void)
 				/* TODO */
 			}
 
+			/* XXX: really? */
+			XSelectInput(display, e.xcreatewindow.window, EnterWindowMask | LeaveWindowMask);
+
+			XMapWindow(display, e.xcreatewindow.window);
+
 /* XXX: to be done by cmd_focus */
 			XRaiseWindow(display, e.xcreatewindow.window);
 
@@ -205,31 +210,11 @@ event_x11(void)
 			break;
 
 		case EnterNotify:
-			{
-				const struct frame *top;
-				struct frame *r;
-
-				top = frame_top();
-				assert(top != NULL);
-
-				r = frame_find_win(top, e.xcrossing.window);
-				if (r == NULL) {
-					/* not a frame window */
-					continue;
-				}
-
-				/* TODO: setting for colours */
-
-				if (current_frame->type == FRAME_LEAF) {
-					event_issue(EVENT_CROSSING, "leave frame %p",
-						(void *) current_frame->win);
-				}
-
-				current_frame = r;
-
-				event_issue(EVENT_CROSSING, "enter frame %p",
-					(void *) e.xcrossing.window);
-			}
+		case LeaveNotify:
+			event_issue(EVENT_CROSSING, "%s %s %p",
+				e.type == EnterNotify ? "enter" : "leave",
+				win_category(e.xcrossing.window),
+				(void *) e.xcrossing.window);
 			break;
 
 		default:
@@ -370,6 +355,7 @@ main(int argc, char *argv[])
 	XSelectInput(display, root,
 		KeyPressMask
 		| ButtonPressMask
+		| EnterWindowMask | LeaveWindowMask
 		| SubstructureRedirectMask | SubstructureNotifyMask);
 
 	if (-1 == win_geom(root, &g)) {

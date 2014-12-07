@@ -113,7 +113,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		enter)
 			echo $args | {
 				read target id
-				if [ $target = frame ]; then
+				if [ $target = client ]; then
 					transset -i $id --inc > /dev/null
 				fi
 			}
@@ -122,7 +122,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		leave)
 			echo $args | {
 				read target id
-				if [ $target = frame ]; then
+				if [ $target = client ]; then
 					transset -i $id --dec > /dev/null
 				fi
 			}
