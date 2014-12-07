@@ -24,7 +24,7 @@ if [ ! -S "$HFWM_IPC" ]; then
 	exit 1
 fi
 
-SUB_PATH=${SUB_PATH:-/tmp/hfwm-$$.sock}
+HFWM_SUB="`mktemp -up /tmp .hfsub-XXXXXX`"
 
 hc() {
 	echo -n $* | socat -t0 unix-sendto:"$HFWM_IPC" stdin
@@ -96,15 +96,16 @@ hc unbind
 	grave layout next
 EOF
 
-pkill xcompmgr
-xcompmgr -n &
+#pkill xcompmgr
+#xcompmgr -n &
 
 #hc spawn xsetroot -solid '#'`randcol``randcol``randcol`
 
-rm -f $SUB_PATH
-socat UNIX-RECV:$SUB_PATH stdout \
+trap "echo would rm -f $HFWM_SUB" INT QUIT
+
+socat UNIX-RECV:$HFWM_SUB stdout \
 | {
-	hc subscribe $SUB_PATH
+	hc subscribe $HFWM_SUB
 	while read event args; do
 		echo event $event, args $args
 		case "$event" in
