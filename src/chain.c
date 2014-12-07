@@ -53,7 +53,7 @@ chain_free(struct chain *chain)
 
 	for (p = chain; p != NULL; p = next) {
 		next = p->next;
-		free(p->argv);
+		free((char **) p->argv);
 		free(p);
 	}
 }
