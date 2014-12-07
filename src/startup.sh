@@ -110,11 +110,11 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		echo event $event, args $args
 		case "$event" in
 		enter)
-			transset -i $args --inc
+			transset -i $args --inc > /dev/null
 			;;
 
 		leave)
-			transset -i $args --dec
+			transset -i $args --dec > /dev/null
 			;;
 
 		*)
