@@ -74,7 +74,10 @@ const char *bg = NULL;
 	} else {
 		Colormap cm;
 
-		XMatchVisualInfo(display, screen, 32, TrueColor, &vinfo);
+		if (!XMatchVisualInfo(display, screen, 32, TrueColor, &vinfo)) {
+			perror("XMatchVisualInfo");
+			exit(EXIT_FAILURE);
+		}
 
 		cm = XCreateColormap(display, root, vinfo.visual, AllocNone);
 
@@ -86,8 +89,9 @@ const char *bg = NULL;
 
 		attrs.colormap         = cm;
 		attrs.background_pixel = 0;
+		attrs.border_pixel     = 0;
 
-		valuemask |= CWColormap | CWBackPixel;
+		valuemask |= CWColormap | CWBackPixel | CWBorderPixel;
 	}
 
 	win = XCreateWindow(display, root,
