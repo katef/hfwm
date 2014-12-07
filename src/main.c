@@ -33,9 +33,6 @@
 
 #define HFWM_VERSION "0.1"
 
-Display *display;
-Window root;
-
 #ifndef IPC_PATH
 #define IPC_PATH "/tmp/hfwm.sock"
 #endif
