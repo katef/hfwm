@@ -19,11 +19,15 @@
 #   hsetroot - it's a bit nicer than xsetroot
 #
 
-IPC_PATH=${IPC_PATH:-/tmp/hfwm.sock}
+if [ ! -S "$HFWM_IPC" ]; then
+	echo '$HFWM_IPC required' >&2
+	exit 1
+fi
+
 SUB_PATH=${SUB_PATH:-/tmp/hfwm-$$.sock}
 
 hc() {
-	echo -n $* | socat -t0 unix-sendto:$IPC_PATH stdin
+	echo -n $* | socat -t0 unix-sendto:"$HFWM_IPC" stdin
 }
 
 randcol() {

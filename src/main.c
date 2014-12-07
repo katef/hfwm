@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 2
+#define _XOPEN_SOURCE 600
 
 #include <sys/types.h>
 #include <sys/select.h>
@@ -38,6 +38,10 @@ Window root;
 
 #ifndef IPC_PATH
 #define IPC_PATH "/tmp/hfwm.sock"
+#endif
+
+#ifndef IPC_ENV
+#define IPC_ENV "HFWM_IPC"
 #endif
 
 static int
@@ -343,6 +347,11 @@ main(int argc, char *argv[])
 
 	if (startup != NULL) {
 		char *argv[] = { startup, NULL };
+
+		if (-1 == setenv(IPC_ENV, ipc_path, 1)) {
+			perror("setenv");
+			return -1;
+		}
 
 		if (-1 == spawn(argv)) {
 			perror(argv[0]);
