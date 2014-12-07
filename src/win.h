@@ -21,5 +21,8 @@ win_resize(Window win, const struct geom *geom,
 int
 win_geom(Window win, struct geom *geom);
 
+const char *
+win_category(Window win);
+
 #endif
 

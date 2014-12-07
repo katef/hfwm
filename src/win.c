@@ -12,6 +12,9 @@
 #include <X11/Xutil.h>
 
 #include "geom.h"
+#include "order.h"
+#include "layout.h"
+#include "frame.h"
 #include "win.h"
 
 char *hostname; /* for WM_CLIENT_MACHINE */
@@ -188,5 +191,28 @@ win_geom(Window win, struct geom *geom)
 	geom->h = h;
 
 	return 0;
+}
+
+const char *
+win_category(Window win)
+{
+	const struct frame *top;
+
+	if (win == root) {
+		return "root";
+	}
+
+	top = frame_top();
+	assert(top != NULL);
+
+	if (frame_find_win(top, win)) {
+		return "frame";
+	}
+
+	if (frame_find_client(top, win)) {
+		return "client";
+	}
+
+	return "unmanaged";
 }
 
