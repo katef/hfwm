@@ -31,15 +31,21 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+#ifndef TMPDIR
+#define TMPDIR "/tmp"
+#endif
+
 #define HFWM_VERSION "0.1"
 
-#ifndef IPC_PATH
-#define IPC_PATH "/tmp/hfwm.sock"
+#ifndef IPC_NAME_
+#define IPC_NAME ".hfwm"
 #endif
 
 #ifndef IPC_ENV
 #define IPC_ENV "HFWM_IPC"
 #endif
+
+static char ipc_path[PATH_MAX];
 
 static int
 ipc_listen(const char *path)
@@ -264,8 +270,17 @@ usage(FILE *f)
 {
 	assert(f != NULL);
 
-	fprintf(f, "usage: hfwm [-f <startup>] [-m <hostname>] {-s <ipc path>}\n");
+	fprintf(f, "usage: hfwm [-f <startup>] [-m <hostname>] {-s <ipc name>}\n");
 	fprintf(f, "       hfwm {-h | -v}\n");
+}
+
+static void
+cleanup(void)
+{
+fprintf(stderr, "cleanup\n");
+	if (-1 == unlink(ipc_path)) {
+		perror(ipc_path);
+	}
 }
 
 int
@@ -274,12 +289,20 @@ main(int argc, char *argv[])
 	int x11, ipc;
 	struct geom g;
 	char *startup;
-	const char *ipc_path;
+	const char *tmp;
+	const char *ipc_dir;
+	const char *ipc_name;
+
+	tmp = getenv("TMPDIR");
+	if (tmp == NULL) {
+		tmp = TMPDIR;
+	}
 
 	/* defaults */
 	startup  = NULL;
 	hostname = NULL;
-	ipc_path = IPC_PATH;
+	ipc_dir  = tmp;
+	ipc_name = IPC_NAME;
 
 	{
 		int c;
@@ -288,7 +311,7 @@ main(int argc, char *argv[])
 			switch (c) {
 			case 'f': startup  = optarg; break;
 			case 'm': hostname = optarg; break;
-			case 's': ipc_path = optarg; break;
+			case 's': ipc_name = optarg; break;
 
 			case 'h':
 				usage(stdout);
@@ -314,12 +337,29 @@ main(int argc, char *argv[])
 		}
 	}
 
+	{
+		size_t n;
+
+		n = snprintf(ipc_path, sizeof ipc_path, "%s/%s-XXXXXX", ipc_dir, ipc_name);
+		if (n >= sizeof ipc_path) {
+			perror(ipc_path);
+			return 1;
+		}
+
+		if (-1 == mkstemp(ipc_path)) {
+			perror(ipc_path);
+			return 1;
+		}
+	}
+
 	display = XOpenDisplay(NULL);
 	screen  = DefaultScreen(display);
 	root    = DefaultRootWindow(display); /* TODO: RootWindow() instead */
 
 	x11 = ConnectionNumber(display);
 	ipc = ipc_listen(ipc_path);
+
+	(void) atexit(cleanup);
 
 	XSelectInput(display, root,
 		KeyPressMask
