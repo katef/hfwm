@@ -28,6 +28,7 @@
 #include "client.h"
 #include "tile.h"
 #include "chain.h"
+#include "event.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -175,6 +176,9 @@ event_x11(void)
 /* XXX: to be done by cmd_focus */
 			XRaiseWindow(display, e.xcreatewindow.window);
 
+			event_issue(EVENT_EXTANCE, "create %p",
+				(void *) e.xcreatewindow.window);
+
 			break;
 
 		case DestroyNotify:
@@ -196,6 +200,9 @@ event_x11(void)
 					perror("layout_resize");
 					/* TODO */
 				}
+
+				event_issue(EVENT_EXTANCE, "destroy %p",
+					(void *) e.xcreatewindow.window);
 			}
 			break;
 
@@ -217,11 +224,17 @@ event_x11(void)
 
 				if (current_frame->type == FRAME_LEAF) {
 					win_border(current_frame->win, "#2222FF");
+
+					event_issue(EVENT_CROSSING, "leave %p",
+						(void *) current_frame->win);
 				}
 
 				current_frame = r;
 
 				win_border(current_frame->win, "#FF2222");
+
+				event_issue(EVENT_CROSSING, "enter %p",
+					(void *) e.xcrossing.window);
 			}
 			break;
 
@@ -277,7 +290,6 @@ usage(FILE *f)
 static void
 cleanup(void)
 {
-fprintf(stderr, "cleanup\n");
 	if (-1 == unlink(ipc_path)) {
 		perror(ipc_path);
 	}

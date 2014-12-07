@@ -1,11 +1,15 @@
+#define _XOPEN_SOURCE 500
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/uio.h>
 
 #include <unistd.h>
 
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -74,34 +78,42 @@ error:
 	return -1;
 }
 
-int
-event_announce(enum event_type type, ...)
+void
+event_issue(enum event_type type, const char *fmt, ...)
 {
 	struct sub *p;
+	size_t n;
+	va_list ap;
 	char buf[64];
 
-	switch (type) {
-	case EVENT_SOMETHING:
-		sprintf(buf, "something");
-		break;
+	assert(fmt != NULL);
 
-	default:
-		errno = EINVAL;
-		return -1;
+	va_start(ap, fmt);
+
+	n = vsnprintf(buf, sizeof buf, fmt, ap);
+	if (n >= sizeof buf) {
+		errno = ENOMEM;
+		perror(buf);
+		exit(EXIT_FAILURE);
 	}
 
+	va_end(ap);
+
 	for (p = subs; p != NULL; p = p->next) {
+		struct iovec iov[2];
+
+		iov[0].iov_base = buf;  iov[0].iov_len = n;
+		iov[1].iov_base = "\n"; iov[1].iov_len = 1;
+
 		if (~p->mask & type) {
 			continue;
 		}
 
-		if (-1 == send(p->s, buf, strlen(buf), 0)) {
+		if (-1 == writev(p->s, iov, sizeof iov / sizeof *iov)) {
 			perror("send"); /* TODO: print peer address */
 			/* TODO: cull peer */
 			continue;
 		}
 	}
-
-	return 0;
 }
 

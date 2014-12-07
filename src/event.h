@@ -2,14 +2,15 @@
 #define EVENT_H
 
 enum event_type {
-	EVENT_SOMETHING = 0x01
+	EVENT_EXTANCE  = 1 << 0,
+	EVENT_CROSSING = 1 << 1
 };
 
 int
 event_subscribe(const char *path, unsigned int mask);
 
-int
-event_announce(enum event_type type, ...);
+void
+event_issue(enum event_type type, const char *fmt, ...);
 
 #endif
 
