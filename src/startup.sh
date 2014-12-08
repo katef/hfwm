@@ -138,7 +138,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 			}
 			;;
 
-		focus)
+		focus|blur)
 			echo $args | {
 				read target id
 
@@ -147,22 +147,11 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 					;;
 
 				client)
-					transset -i $id --inc > /dev/null
-					;;
-				esac
-			}
-			;;
-
-		blur)
-			echo $args | {
-				read target id
-
-				case $target in
-				frame)
-					;;
-
-				client)
-					transset -i $id --dec > /dev/null
+					case $event in
+					focus) delta=inc ;;
+					blur)  delta=dec ;;
+					esac
+					transset -i $id --$delta > /dev/null
 					;;
 				esac
 			}
