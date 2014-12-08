@@ -17,7 +17,10 @@ tile_resize(const struct frame *p)
 
 	assert(p != NULL);
 
-	if (-1 == geom_inner(&area, &p->geom, FRAME_BORDER + FRAME_SPACING, TILE_MARGIN - TILE_SPACING)) {
+	/* XXX: should not be neccessary; why can't &p->geom be passed const to geom_inner? */
+	area = p->geom;
+
+	if (-1 == geom_inner(&area, &area, FRAME_BORDER + FRAME_SPACING, TILE_MARGIN - TILE_SPACING)) {
 		return -1;
 	}
 
