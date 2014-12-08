@@ -3,7 +3,8 @@
 
 enum event_type {
 	EVENT_EXTANCE  = 1 << 0,
-	EVENT_CROSSING = 1 << 1
+	EVENT_DIOPTRE  = 1 << 1,
+	EVENT_CROSSING = 1 << 2
 };
 
 int

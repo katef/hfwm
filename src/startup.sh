@@ -109,22 +109,62 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 	while read event args; do
 		echo event=$event, args=$args
 
-		case "$event" in
+		case $event in
 		enter)
 			echo $args | {
 				read target id
-				if [ $target = client ]; then
-					transset -i $id --inc > /dev/null
-				fi
+
+				case $target in
+				root)
+					;;
+
+				frame)
+					hc focusid $id frame
+					;;
+
+				client)
+					hc focusid $id client
+					;;
+
+				unmanaged)
+					;;
+				esac
 			}
 			;;
 
 		leave)
 			echo $args | {
 				read target id
-				if [ $target = client ]; then
+			}
+			;;
+
+		focus)
+			echo $args | {
+				read target id
+
+				case $target in
+				frame)
+					;;
+
+				client)
+					transset -i $id --inc > /dev/null
+					;;
+				esac
+			}
+			;;
+
+		blur)
+			echo $args | {
+				read target id
+
+				case $target in
+				frame)
+					;;
+
+				client)
 					transset -i $id --dec > /dev/null
-				fi
+					;;
+				esac
 			}
 			;;
 

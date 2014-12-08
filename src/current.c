@@ -11,6 +11,8 @@
 #include "event.h"
 #include "frame.h"
 
+struct frame *current_frame;
+
 void
 set_current_frame(struct frame *p)
 {

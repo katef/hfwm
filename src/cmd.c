@@ -13,6 +13,7 @@
 #include "geom.h"
 #include "order.h"
 #include "layout.h"
+#include "current.h"
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
@@ -238,11 +239,12 @@ cmd_focusid(char *const argv[])
 
 		p = client_find(current_frame->u.clients, win);
 		if (p == NULL) {
+			/* TODO: search all frames instead, and focus that frame first */
 			errno = ENOENT;
 			return -1;
 		}
 
-		current_frame->current_client = p;
+		set_current_client(current_frame, p);
 	} else if (0 == strcmp(argv[1], "frame")) {
 		const struct frame *top;
 		struct frame *p;
@@ -256,7 +258,7 @@ cmd_focusid(char *const argv[])
 			return -1;
 		}
 
-		current_frame = p;
+		set_current_frame(p);
 	} else {
 		errno = EINVAL;
 		return -1;
@@ -282,19 +284,9 @@ cmd_focus(char *const argv[])
 			return 0;
 		}
 
-		if (current_frame->current_client != NULL) {
-			event_issue(EVENT_CROSSING, "leave client %p",
-				(void *) current_frame->current_client->win);
-		}
-
 		new = client_cycle(current_frame->u.clients, current_frame->current_client, order);
 
-		current_frame->current_client = new;
-
-		if (current_frame->current_client != NULL) {
-			event_issue(EVENT_CROSSING, "enter client %p",
-				(void *) current_frame->current_client->win);
-		}
+		set_current_client(current_frame, new);
 	} else {
 		struct frame *new;
 		enum rel rel;
@@ -306,23 +298,12 @@ cmd_focus(char *const argv[])
 
 		assert(current_frame != NULL);
 
-		if (current_frame->type == FRAME_LEAF) {
-			event_issue(EVENT_CROSSING, "leave frame %p",
-				(void *) current_frame->win);
-		}
-
 		new = frame_focus(current_frame, rel, order);
 		if (new == NULL) {
 			return -1;
 		}
 
-		current_frame = new;
-
-		/* TODO: setting for active colour */
-		if (current_frame->type == FRAME_LEAF) {
-			event_issue(EVENT_CROSSING, "enter frame %p",
-				(void *) current_frame->win);
-		}
+		set_current_frame(new);
 	}
 
 	return 0;

@@ -21,6 +21,7 @@
 #include "geom.h"
 #include "order.h"
 #include "layout.h"
+#include "current.h"
 #include "frame.h"
 #include "spawn.h"
 #include "key.h"
@@ -160,8 +161,8 @@ event_x11(void)
 					continue;
 				}
 
-/* TODO: would call cmd_focus by window new->win Window ID here */
-				current_frame->current_client = new;
+				/* XXX: focusid on IPC create event instead */
+				set_current_client(current_frame, new);
 			}
 
 			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
@@ -176,7 +177,7 @@ event_x11(void)
 
 			XMapWindow(display, e.xcreatewindow.window);
 
-/* XXX: to be done by cmd_focus */
+/* XXX: to be done by focus */
 			XRaiseWindow(display, e.xcreatewindow.window);
 
 			event_issue(EVENT_EXTANCE, "create %p",
@@ -196,6 +197,9 @@ event_x11(void)
 				if (r == NULL) {
 					continue;
 				}
+
+				assert(r->type == FRAME_LEAF);
+				set_current_client(r, NULL);
 
 				client_remove(&r->u.clients, e.xcreatewindow.window);
 
@@ -373,6 +377,9 @@ main(int argc, char *argv[])
 		perror("frame_create");
 		return 1;
 	}
+
+	event_issue(EVENT_DIOPTRE, "focus frame %p",
+		(void *) current_frame->win);
 
 	if (startup != NULL) {
 		char *argv[2];

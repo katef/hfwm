@@ -4,6 +4,8 @@
 struct frame;
 struct client;
 
+extern struct frame *current_frame;
+
 void
 set_current_frame(struct frame *p);
 

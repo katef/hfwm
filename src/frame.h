@@ -41,8 +41,6 @@ struct frame {
 	} u;
 };
 
-extern struct frame *current_frame;
-
 enum rel
 rel_lookup(const char *s);
 

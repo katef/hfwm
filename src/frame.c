@@ -12,9 +12,7 @@
 #include "frame.h"
 #include "win.h"
 #include "client.h"
-
-/* TODO: maybe lives in cmd.c */
-struct frame *current_frame;
+#include "current.h"
 
 static void
 frame_resize(struct frame *p, const struct geom *g)
