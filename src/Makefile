@@ -4,6 +4,7 @@ SRC += src/args.c
 SRC += src/chain.c
 SRC += src/client.c
 SRC += src/cmd.c
+SRC += src/current.c
 SRC += src/event.c
 SRC += src/frame.c
 SRC += src/geom.c
