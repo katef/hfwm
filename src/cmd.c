@@ -206,6 +206,65 @@ cmd_merge(char *const argv[])
 	return 0;
 }
 
+/* TODO: merge into cmd_focus after the dust settles */
+static int
+cmd_focusid(char *const argv[])
+{
+	Window win;
+
+	/* TODO: move to win.c */
+	{
+		void *q;
+		int r;
+
+		r = sscanf(argv[0], "%p", &q);
+		if (1 != r) {
+			if (r >= 0) {
+				errno = EINVAL;
+			}
+			return -1;
+		}
+
+		win = (Window) q;
+	}
+
+	if (0 == strcmp(argv[1], "client")) {
+		struct client *p;
+
+		if (current_frame->type != FRAME_LEAF) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		p = client_find(current_frame->u.clients, win);
+		if (p == NULL) {
+			errno = ENOENT;
+			return -1;
+		}
+
+		current_frame->current_client = p;
+	} else if (0 == strcmp(argv[1], "frame")) {
+		const struct frame *top;
+		struct frame *p;
+
+		top = frame_top();
+		assert(top != NULL);
+
+		p = frame_find_win(top, win);
+		if (p == NULL) {
+			errno = ENOENT;
+			return -1;
+		}
+
+		current_frame = p;
+	} else {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
 static int
 cmd_focus(char *const argv[])
 {
@@ -343,6 +402,7 @@ cmd_dispatch(char *const argv[])
 		{ "split",     cmd_split     },
 		{ "merge",     cmd_merge     },
 		{ "focus",     cmd_focus     },
+		{ "focusid",   cmd_focusid   },
 		{ "layout",    cmd_layout    },
 		{ "redist",    cmd_redist    }
 	};
