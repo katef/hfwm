@@ -22,7 +22,7 @@ int
 win_geom(Window win, struct geom *geom);
 
 const char *
-win_category(Window win);
+win_type(Window win);
 
 #endif
 

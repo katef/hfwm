@@ -194,9 +194,10 @@ win_geom(Window win, struct geom *geom)
 }
 
 const char *
-win_category(Window win)
+win_type(Window win)
 {
 	const struct frame *top;
+	const struct frame *r;
 
 	if (win == root) {
 		return "root";
@@ -205,8 +206,9 @@ win_category(Window win)
 	top = frame_top();
 	assert(top != NULL);
 
-	if (frame_find_win(top, win)) {
-		return "frame";
+	r = frame_find_win(top, win);
+	if (r != NULL) {
+		return frame_type(r);
 	}
 
 	if (frame_find_client(top, win)) {

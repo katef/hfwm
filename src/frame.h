@@ -76,5 +76,8 @@ frame_find_win(const struct frame *top, Window win);
 struct frame *
 frame_find_client(const struct frame *top, Window win);
 
+const char *
+frame_type(const struct frame *p);
+
 #endif
 

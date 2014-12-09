@@ -434,3 +434,16 @@ frame_find_client(const struct frame *p, Window win)
 	return NULL;
 }
 
+const char *
+frame_type(const struct frame *p)
+{
+	assert(p != NULL);
+
+	switch (p->type) {
+	case FRAME_LEAF:   return "leaf";
+	case FRAME_BRANCH: return "branch";
+	}
+
+	return "unrecognised";
+}
+

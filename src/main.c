@@ -217,7 +217,7 @@ event_x11(void)
 		case LeaveNotify:
 			event_issue(EVENT_CROSSING, "%s %s %p",
 				e.type == EnterNotify ? "enter" : "leave",
-				win_category(e.xcrossing.window),
+				win_type(e.xcrossing.window),
 				(void *) e.xcrossing.window);
 			break;
 

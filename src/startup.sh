@@ -110,15 +110,24 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		echo event=$event, args=$args
 
 		case $event in
+		create)
+# TODO: pass type, id. e.g. "create frame 0xe0000a"
+# TODO: make frames transluscent for now
+			;;
+
+		destroy)
+			;;
+
 		enter)
 			echo $args | {
-				read target id
+				read type id
 
-				case $target in
-				root)
+				case $type in
+				root|branch)
+					# intentionally don't focus branches by hover
 					;;
 
-				frame)
+				leaf)
 					hc focusid $id frame
 					;;
 
@@ -127,6 +136,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 					;;
 
 				unmanaged)
+					# TODO: raise window
 					;;
 				esac
 			}
@@ -134,16 +144,16 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 
 		leave)
 			echo $args | {
-				read target id
+				read type id
 			}
 			;;
 
 		focus|blur)
 			echo $args | {
-				read target id
+				read type id
 
-				case $target in
-				frame)
+				case $type in
+				leaf|branch)
 					;;
 
 				client)
