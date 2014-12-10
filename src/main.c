@@ -137,16 +137,23 @@ event_x11(void)
 
 		case CreateNotify:
 			if (current_frame->type != FRAME_LEAF) {
+				event_issue(EVENT_EXTANCE, "create unmanaged %p",
+					(void *) e.xcreatewindow.window);
 				continue;
 			}
 
 			{
 				const struct frame *top;
+				const struct frame *r;
 
 				top = frame_top();
 				assert(top != NULL);
 
-				if (frame_find_win(top, e.xcreatewindow.window)) {
+				r = frame_find_win(top, e.xcreatewindow.window);
+				if (r != NULL) {
+					event_issue(EVENT_EXTANCE, "create %s %p",
+						frame_type(r),
+						(void *) e.xcreatewindow.window);
 					/* our frame's window; disregard */
 					continue;
 				}
@@ -172,15 +179,11 @@ event_x11(void)
 				/* TODO */
 			}
 
-			/* XXX: really? */
 			XSelectInput(display, e.xcreatewindow.window, EnterWindowMask | LeaveWindowMask);
 
 			XMapWindow(display, e.xcreatewindow.window);
 
-/* XXX: to be done by focus */
-			XRaiseWindow(display, e.xcreatewindow.window);
-
-			event_issue(EVENT_EXTANCE, "create %p",
+			event_issue(EVENT_EXTANCE, "create client %p",
 				(void *) e.xcreatewindow.window);
 
 			break;
@@ -193,8 +196,19 @@ event_x11(void)
 				top = frame_top();
 				assert(top != NULL);
 
+				r = frame_find_win(top, e.xcreatewindow.window);
+				/* TODO: if it's a frame... */
+				if (r != NULL) {
+					event_issue(EVENT_EXTANCE, "destroy %s %p",
+						frame_type(r),
+						(void *) e.xcreatewindow.window);
+					continue;
+				}
+
 				r = frame_find_client(top, e.xcreatewindow.window);
 				if (r == NULL) {
+					event_issue(EVENT_EXTANCE, "destroy unmanaged %p",
+						(void *) e.xcreatewindow.window);
 					continue;
 				}
 
@@ -208,7 +222,7 @@ event_x11(void)
 					/* TODO */
 				}
 
-				event_issue(EVENT_EXTANCE, "destroy %p",
+				event_issue(EVENT_EXTANCE, "destroy client %p",
 					(void *) e.xcreatewindow.window);
 			}
 			break;
@@ -378,7 +392,7 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	event_issue(EVENT_DIOPTRE, "focus frame %p",
+	event_issue(EVENT_DIOPTRE, "focus leaf %p",
 		(void *) current_frame->win);
 
 	if (startup != NULL) {

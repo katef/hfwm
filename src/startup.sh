@@ -149,10 +149,15 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 			type=$1
 			id=$2
 
-# TODO: make frames transluscent for now
-# TODO: focus window
+			case $type in
+			root|client|unmanaged)
+				hc focusid $id $type
+				;;
 
-			eyecandy $type $id on
+			leaf|branch)
+				hc focusid $id frame
+				;;
+			esac
 			;;
 
 		destroy)
