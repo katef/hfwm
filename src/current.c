@@ -28,18 +28,15 @@ set_current_frame(struct frame *p)
 			(void *) current_frame->current_client->win);
 	}
 
-	/* TODO: possibly eventually branches will have windows, too */
-	if (current_frame->type == FRAME_LEAF) {
-		event_issue(EVENT_DIOPTRE, "blur frame %p",
-			(void *) current_frame->win);
-	}
+	event_issue(EVENT_DIOPTRE, "blur %s %p",
+		frame_type(current_frame),
+		(void *) current_frame->win);
 
 	current_frame = p;
 
-	if (current_frame->type == FRAME_LEAF) {
-		event_issue(EVENT_DIOPTRE, "focus frame %p",
-			(void *) current_frame->win);
-	}
+	event_issue(EVENT_DIOPTRE, "focus %s %p",
+		frame_type(current_frame),
+		(void *) current_frame->win);
 
 	if (current_frame->type == FRAME_LEAF && current_frame->current_client != NULL) {
 		event_issue(EVENT_DIOPTRE, "focus client %p",
