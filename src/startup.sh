@@ -107,7 +107,8 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 | {
 	hc subscribe $HFWM_SUB
 	while read event args; do
-		echo event=$event, args=$args
+		set -- $args
+		echo $event $*
 
 		case $event in
 		create)
@@ -119,52 +120,49 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 			;;
 
 		enter)
-			echo $args | {
-				read type id
+			type=$1
+			id=$2
 
-				case $type in
-				root|branch)
-					# intentionally don't focus branches by hover
-					;;
+			case $type in
+			root|branch)
+				# intentionally don't focus branches by hover
+				;;
 
-				leaf)
-					hc focusid $id frame
-					;;
+			leaf)
+				hc focusid $id frame
+				;;
 
-				client)
-					hc focusid $id client
-					;;
+			client)
+				hc focusid $id client
+				;;
 
-				unmanaged)
-					# TODO: raise window
-					;;
-				esac
-			}
+			unmanaged)
+				# TODO: raise window
+				;;
+			esac
 			;;
 
 		leave)
-			echo $args | {
-				read type id
-			}
+			type=$1
+			id=$2
 			;;
 
 		focus|blur)
-			echo $args | {
-				read type id
+			type=$1
+			id=$2
 
-				case $type in
-				leaf|branch)
-					;;
+			case $type in
+			leaf|branch)
+				;;
 
-				client)
-					case $event in
-					focus) delta=inc ;;
-					blur)  delta=dec ;;
-					esac
-					transset -i $id --$delta > /dev/null
-					;;
+			client)
+				case $event in
+				focus) delta=inc ;;
+				blur)  delta=dec ;;
 				esac
-			}
+				transset -i $id --$delta > /dev/null
+				;;
+			esac
 			;;
 
 		*)
