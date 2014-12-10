@@ -37,6 +37,40 @@ randcol() {
 	| ( read n; echo $(( 4 + $n % 2 )) )
 }
 
+eyecandy() {
+	local type=$1
+	local id=$2
+	local active=$3
+
+	local colour
+	local prefix
+
+	case $active in
+	on)  prefix=''   ;;
+	off) prefix=dark ;;
+	esac
+
+	case $type in
+	root)              colour=none   ;;
+	branch|leaf|frame) colour=red    ;;
+	client)            colour=green  ;;
+	unmanaged)         colour=purple ;;
+	esac
+
+	if [ $colour != none ]; then
+		xwinthing $id bc=$prefix$colour
+	fi
+
+	if [ $type = root ]; then
+		return
+	fi
+
+	case $active in
+	on)  transset -i $id --inc > /dev/null ;;
+	off) transset -i $id --dec > /dev/null ;;
+	esac
+}
+
 # This is usually the diamond key for a Sun, the command key for a mac, and the
 # windows key for a PC. The idea here is that all window manager stuff strictly
 # only uses this modifier, leaving everything else for applications.
@@ -112,8 +146,13 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 
 		case $event in
 		create)
-# TODO: pass type, id. e.g. "create frame 0xe0000a"
+			type=$1
+			id=$2
+
 # TODO: make frames transluscent for now
+# TODO: focus window
+
+			eyecandy $type $id on
 			;;
 
 		destroy)
@@ -122,6 +161,8 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		enter)
 			type=$1
 			id=$2
+
+			eyecandy $type $id on
 
 			case $type in
 			root|branch)
@@ -137,7 +178,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 				;;
 
 			unmanaged)
-				# TODO: raise window
+				xwinthing $id raise
 				;;
 			esac
 			;;
@@ -145,28 +186,42 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		leave)
 			type=$1
 			id=$2
+
+			eyecandy $type $id off
+
+			case $type in
+			unmanaged)
+				# TODO: raise window
+				;;
+			esac
 			;;
 
-		focus|blur)
+		focus)
 			type=$1
 			id=$2
+# nb. will never get a focus/blur event for unmanaged windows
+
+			eyecandy $type $id on
 
 			case $type in
 			leaf|branch)
 				;;
 
 			client)
-				case $event in
-				focus) delta=inc ;;
-				blur)  delta=dec ;;
-				esac
-				transset -i $id --$delta > /dev/null
+				xwinthing $id raise
 				;;
 			esac
 			;;
 
+		blur)
+			type=$1
+			id=$2
+
+			eyecandy $type $id off
+			;;
+
 		*)
-			echo unhandled event: $event $args >&2
+			echo unhandled event: $event $* >&2
 			;;
 		esac
 	done
