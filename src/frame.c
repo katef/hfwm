@@ -23,6 +23,9 @@ frame_resize(struct frame *p, const struct geom *g)
 	assert(p != NULL);
 	assert(g != NULL);
 
+	(void) win_resize(p->win, &p->geom,
+		FRAME_BORDER, FRAME_SPACING);
+
 	switch (p->type) {
 	case FRAME_BRANCH:
 		for (q = p->u.children; q != NULL; q = q->next) {
@@ -31,9 +34,6 @@ frame_resize(struct frame *p, const struct geom *g)
 		break;
 
 	case FRAME_LEAF:
-		(void) win_resize(p->win, &p->geom,
-			FRAME_BORDER, FRAME_SPACING);
-
 		for (c = p->u.clients; c != NULL; c = c->next) {
 			/* TODO: win_resize() on each c->win here */
 		}
@@ -52,6 +52,9 @@ frame_scale(struct frame *p, const struct ratio *r)
 	assert(p != NULL);
 	assert(r != NULL);
 
+	(void) win_resize(p->win, &p->geom,
+		FRAME_BORDER, FRAME_SPACING);
+
 	switch (p->type) {
 	case FRAME_BRANCH:
 		for (q = p->u.children; q != NULL; q = q->next) {
@@ -60,9 +63,6 @@ frame_scale(struct frame *p, const struct ratio *r)
 		break;
 
 	case FRAME_LEAF:
-		(void) win_resize(p->win, &p->geom,
-			FRAME_BORDER, FRAME_SPACING);
-
 		for (c = p->u.clients; c != NULL; c = c->next) {
 			/* TODO: win_resize() on each c->win here */
 		}
@@ -138,18 +138,18 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 
 	layout_split(layout, order, &new->geom, &old->geom, 2);
 
+	new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
+		FRAME_BORDER, FRAME_SPACING);
+	if (!new->win) {
+		return NULL;
+	}
+
+	/* TODO: maybe set Window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
+	(void) win_resize(old->win, &old->geom,
+		FRAME_BORDER, FRAME_SPACING);
+
 	if (new->type == FRAME_LEAF) {
 		new->current_client = NULL;
-
-		new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
-			FRAME_BORDER, FRAME_SPACING);
-		if (!new->win) {
-			return NULL;
-		}
-
-		/* TODO: maybe set Window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
-		(void) win_resize(old->win, &old->geom,
-			FRAME_BORDER, FRAME_SPACING);
 	}
 
 	switch (order) {
@@ -302,9 +302,6 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 	old->layout     = layout;
 	old->u.children = a; /* or b */
 
-	/* TODO: optimisation; transplant this to one of the leaves, instead of creating a new Window */
-	win_destroy(old->win);
-
 	return b;
 }
 
@@ -383,6 +380,10 @@ frame_find_win(const struct frame *p, Window win)
 
 	assert(p != NULL);
 
+	if (p->win == win) {
+		return (struct frame *) p;
+	}
+
 	switch (p->type) {
 	case FRAME_BRANCH:
 		for (q = p->u.children; q != NULL; q = q->next) {
@@ -396,9 +397,6 @@ frame_find_win(const struct frame *p, Window win)
 		break;
 
 	case FRAME_LEAF:
-		if (p->win == win) {
-			return (struct frame *) p;
-		}
 		break;
 	}
 

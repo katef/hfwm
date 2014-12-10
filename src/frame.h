@@ -4,9 +4,9 @@
 struct client;
 struct geom;
 
-#define FRAME_MARGIN  2
-#define FRAME_BORDER  1
-#define FRAME_SPACING 2
+#define FRAME_MARGIN  13
+#define FRAME_BORDER  7
+#define FRAME_SPACING 5
 
 /* for XClassHint */
 #define FRAME_NAME  "hfwm"
@@ -30,8 +30,9 @@ struct frame {
 	enum layout layout;   /* layout for .u.children or .u.window list */
 	struct geom geom;
 
-	/* only for FRAME_LEAF */
 	Window win;
+
+	/* only for FRAME_LEAF */
 	struct client *current_client;
 
 	enum frame_type type;
