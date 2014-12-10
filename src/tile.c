@@ -17,11 +17,22 @@ tile_resize(const struct frame *p)
 
 	assert(p != NULL);
 
-	/* XXX: should not be neccessary; why can't &p->geom be passed const to geom_inner? */
-	area = p->geom;
-
-	if (-1 == geom_inner(&area, &area, FRAME_BORDER + FRAME_SPACING, TILE_MARGIN - TILE_SPACING)) {
+	if (-1 == geom_inner(&area, &p->geom, TILE_BORDER,
+		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
+	{
 		return -1;
+	}
+
+	/* XXX: the arithmetic here is impossible to follow. rework it */
+	area.w += TILE_BORDER * 2;
+	area.h += TILE_BORDER * 2;
+
+	/* this is overhang for odd number of spacing between tiles */
+	/* TODO: check limit. maybe do this using geom_something(), for DRY */
+	switch (p->layout) {
+	case LAYOUT_HORIZ: area.w -= TILE_SPACING; break;
+	case LAYOUT_VERT:  area.h -= TILE_SPACING; break;
+	case LAYOUT_MAX:                           break;
 	}
 
 	/* height reserved for tabs */
@@ -53,6 +64,13 @@ tile_resize(const struct frame *p)
 			/* XXX: would rather ORDER_NEXT here. order should be an option passed to this function */
 			if (n >= 2) {
 				layout_split(p->layout, ORDER_PREV, &new, &old, n);
+			}
+
+			/* to account for the double space from layout_split() */
+			switch (p->layout) {
+			case LAYOUT_HORIZ: old.w += TILE_SPACING; break;
+			case LAYOUT_VERT:  old.h += TILE_SPACING; break;
+			case LAYOUT_MAX:                          break;
 			}
 
 			win_resize(c->win, &old, TILE_BORDER, TILE_SPACING);
