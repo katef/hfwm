@@ -332,12 +332,13 @@ cmd_layout(char *const argv[])
 		layout = layout_cycle(current_frame->layout, delta);
 	}
 
-	current_frame->layout = layout;
-
-	if (-1 == tile_resize(current_frame)) {
-		perror("tile_resize");
+	if (-1 == tile_clients(current_frame->u.clients, layout, &current_frame->geom)) {
+		perror("tile_clients");
+		/* TODO: put them back, for the ones which were win_resize()d */
 		return -1;
 	}
+
+	current_frame->layout = layout;
 
 	return 0;
 }

@@ -11,13 +11,13 @@
 #include "win.h"
 
 int
-tile_resize(const struct frame *p)
+tile_clients(const struct client *clients, enum layout layout, const struct geom *g)
 {
 	struct geom area;
 
-	assert(p != NULL);
+	assert(g != NULL);
 
-	if (-1 == geom_inset(&area, &p->geom, TILE_BORDER,
+	if (-1 == geom_inset(&area, g, TILE_BORDER,
 		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
 	{
 		return -1;
@@ -29,7 +29,7 @@ tile_resize(const struct frame *p)
 
 	/* this is overhang for odd number of spacing between tiles */
 	/* TODO: check limit. maybe do this using geom_something(), for DRY */
-	switch (p->layout) {
+	switch (layout) {
 	case LAYOUT_HORIZ: area.w -= TILE_SPACING; break;
 	case LAYOUT_VERT:  area.h -= TILE_SPACING; break;
 	case LAYOUT_MAX:                           break;
@@ -53,21 +53,21 @@ tile_resize(const struct frame *p)
 	 */
 	{
 		struct geom new, old;
-		struct client *c;
+		const struct client *c;
 		unsigned n;
 
 		old = area;
 
-		for (n = client_count(p->u.clients), c = p->u.clients; n > 0; n--, c = c->next) {
+		for (n = client_count(clients), c = clients; n > 0; n--, c = c->next) {
 			assert(c != NULL);
 
 			/* XXX: would rather ORDER_NEXT here. order should be an option passed to this function */
 			if (n >= 2) {
-				layout_split(p->layout, ORDER_PREV, &new, &old, n);
+				layout_split(layout, ORDER_PREV, &new, &old, n);
 			}
 
 			/* to account for the double space from layout_split() */
-			switch (p->layout) {
+			switch (layout) {
 			case LAYOUT_HORIZ: old.w += TILE_SPACING; break;
 			case LAYOUT_VERT:  old.h += TILE_SPACING; break;
 			case LAYOUT_MAX:                          break;

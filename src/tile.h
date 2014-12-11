@@ -9,7 +9,7 @@ struct geom;
 struct client;
 
 int
-tile_resize(const struct frame *p);
+tile_clients(const struct client *clients, enum layout layout, const struct geom *g);
 
 #endif
 

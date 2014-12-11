@@ -174,8 +174,8 @@ event_x11(void)
 
 			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
 
-			if (-1 == tile_resize(current_frame)) {
-				perror("layout_resize");
+			if (-1 == tile_clients(current_frame->u.clients, current_frame->layout, &current_frame->geom)) {
+				perror("tile_clients");
 				/* TODO */
 			}
 
@@ -217,8 +217,8 @@ event_x11(void)
 
 				client_remove(&r->u.clients, e.xcreatewindow.window);
 
-				if (-1 == tile_resize(r)) {
-					perror("layout_resize");
+				if (-1 == tile_clients(r->u.clients, r->layout, &r->geom)) {
+					perror("tile_clients");
 					/* TODO */
 				}
 
