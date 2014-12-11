@@ -27,19 +27,20 @@ geom_inset(struct geom *in, const struct geom *g,
 }
 
 void
-geom_ratio(struct ratio *r, const struct geom *old, const struct geom *new)
+geom_ratio(struct ratio *r, const struct geom *num, const struct geom *denom)
 {
 	assert(r != NULL);
-	assert(old != NULL);
-	assert(new != NULL);
+	assert(num != NULL);
+	assert(denom != NULL);
 
-	/* XXX: deal with divide by zero */
+	assert(denom->x != 0 && denom->y != 0);
+	assert(denom->w != 0 && denom->h != 0);
 
-	r->x = old->x / (double) new->x;
-	r->y = old->y / (double) new->y;
+	r->x = num->x / (double) denom->x;
+	r->y = num->y / (double) denom->y;
 
-	r->w = old->w / (double) new->w;
-	r->h = old->h / (double) new->h;
+	r->w = num->w / (double) denom->w;
+	r->h = num->h / (double) denom->h;
 }
 
 void

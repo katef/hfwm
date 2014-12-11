@@ -368,6 +368,8 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 
 	layout_redistribute(&a, &b, layout, n);
 
+	/* TODO: deal with divide by zero */
+
 	geom_ratio(&ra, &a, &curr->geom);
 	geom_ratio(&rb, &b, &next->geom);
 
