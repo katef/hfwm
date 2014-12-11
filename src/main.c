@@ -381,8 +381,8 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	if (-1 == geom_inner(&g, &g, 0, FRAME_MARGIN - FRAME_SPACING)) {
-		perror("geom_inner");
+	if (-1 == geom_inset(&g, &g, 0, FRAME_MARGIN - FRAME_SPACING)) {
+		perror("geom_inset");
 		return 1;
 	}
 

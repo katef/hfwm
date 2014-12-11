@@ -17,7 +17,7 @@ tile_resize(const struct frame *p)
 
 	assert(p != NULL);
 
-	if (-1 == geom_inner(&area, &p->geom, TILE_BORDER,
+	if (-1 == geom_inset(&area, &p->geom, TILE_BORDER,
 		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
 	{
 		return -1;

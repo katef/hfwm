@@ -16,7 +16,7 @@ struct ratio {
 };
 
 int
-geom_inner(struct geom *in, const struct geom *g,
+geom_inset(struct geom *in, const struct geom *g,
 	unsigned int bw, int spacing);
 
 void

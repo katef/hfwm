@@ -55,7 +55,7 @@ const char *bg = NULL;
 		exit(EXIT_FAILURE);
 	}
 
-	if (-1 == geom_inner(&in, geom, bw, spacing)) {
+	if (-1 == geom_inset(&in, geom, bw, spacing)) {
 		return (Window) 0x0;
 	}
 
@@ -152,7 +152,7 @@ win_resize(Window win, const struct geom *geom,
 
 	assert(geom != NULL);
 
-	if (-1 == geom_inner(&in, geom, bw, spacing)) {
+	if (-1 == geom_inset(&in, geom, bw, spacing)) {
 		return -1;
 	}
 

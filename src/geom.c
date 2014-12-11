@@ -1,13 +1,12 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
-#include <stdio.h> /* XXX */
 #include <errno.h>
 
 #include "geom.h"
 
 int
-geom_inner(struct geom *in, const struct geom *g,
+geom_inset(struct geom *in, const struct geom *g,
 	unsigned int bw, int spacing)
 {
 	assert(in != NULL);
