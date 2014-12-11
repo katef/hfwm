@@ -302,6 +302,8 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 	old->layout     = layout;
 	old->u.children = a; /* or b */
 
+	XLowerWindow(display, old->win);
+
 	return b;
 }
 
