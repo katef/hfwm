@@ -8,6 +8,9 @@ struct geom;
 #define FRAME_BORDER  7
 #define FRAME_SPACING 5
 
+#define FRAME_MIN_WIDTH  30
+#define FRAME_MIN_HEIGHT 30
+
 /* for XClassHint */
 #define FRAME_NAME  "hfwm"
 #define FRAME_CLASS "Frame"
@@ -68,7 +71,7 @@ frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
 struct frame *
 frame_focus(struct frame *curr, enum rel rel, enum order order);
 
-void
+int
 frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n);
 
 struct frame *

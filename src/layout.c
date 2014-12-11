@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
+#include <errno.h>
 
 #include "geom.h"
 #include "order.h"
@@ -99,7 +100,7 @@ layout_merge(enum order order, struct geom *dst, struct geom *src)
 	}
 }
 
-void
+int
 layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned n)
 {
 	assert(a != NULL);
@@ -111,7 +112,8 @@ layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned
 
 	case LAYOUT_HORIZ:
 		if (n > b->w) {
-			n = b->w;
+			errno = ERANGE;
+			return -1;
 		}
 
 		a->w += n;
@@ -120,12 +122,15 @@ layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned
 
 	case LAYOUT_VERT:
 		if (n > b->h) {
-			n = b->h;
+			errno = ERANGE;
+			return -1;
 		}
 
 		a->h += n;
 		b->h -= n;
 		break;
 	}
+
+	return 0;
 }
 

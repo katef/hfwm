@@ -363,7 +363,9 @@ cmd_redist(char *const argv[])
 		layout = current_frame->parent->layout;
 	}
 
-	frame_redistribute(current_frame, layout, order, n);
+	if (-1 == frame_redistribute(current_frame, layout, order, n)) {
+		return -1;
+	}
 
 	return 0;
 }

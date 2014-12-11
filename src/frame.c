@@ -343,7 +343,7 @@ frame_focus(struct frame *curr, enum rel rel, enum order order)
 	return next;
 }
 
-void
+int
 frame_redistribute(struct frame *p, enum layout layout, enum order order, unsigned n)
 {
 	struct frame *curr, *next;
@@ -360,21 +360,48 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 	}
 
 	if (next == NULL) {
-		return;
+		return 0;
 	}
 
 	a = curr->geom;
 	b = next->geom;
 
-	layout_redistribute(&a, &b, layout, n);
+	if (-1 == layout_redistribute(&a, &b, layout, n)) {
+		return -1;
+	}
 
-	/* TODO: deal with divide by zero */
+	switch (layout) {
+	case LAYOUT_MAX:
+		return 0;
+
+	case LAYOUT_HORIZ:
+		if (b.w < FRAME_MIN_WIDTH) {
+			return 0;
+		}
+		break;
+
+	case LAYOUT_VERT:
+		if (b.h < FRAME_MIN_HEIGHT) {
+			return 0;
+		}
+		break;
+	}
+
+	/* TODO: deal with divide by zero
+	 * assuming the geom was non-zero beforehand, this can only happen
+	 * if n is greater than one dimension, so layout_redistribute
+	 * makes a or b occupy the entire space */
 
 	geom_ratio(&ra, &a, &curr->geom);
 	geom_ratio(&rb, &b, &next->geom);
 
+	assert(ra.x > 0 && ra.y > 0 && ra.w > 0 && ra.h > 0);
+	assert(rb.x > 0 && rb.y > 0 && rb.w > 0 && rb.h > 0);
+
 	frame_scale(curr, &ra);
 	frame_scale(next, &rb);
+
+	return 0;
 }
 
 struct frame *
