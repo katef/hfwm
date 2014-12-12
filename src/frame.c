@@ -23,8 +23,12 @@ frame_resize(struct frame *p, const struct geom *g)
 	assert(p != NULL);
 	assert(g != NULL);
 
-	(void) win_resize(p->win, &p->geom,
-		FRAME_BORDER, FRAME_SPACING);
+	if (-1 == win_resize(p->win, &p->geom,
+		FRAME_BORDER, FRAME_SPACING)) {
+		XUnmapWindow(display, p->win);
+	} else {
+		XMapWindow(display, p->win);
+	}
 
 	switch (p->type) {
 	case FRAME_BRANCH:
@@ -45,13 +49,16 @@ static void
 frame_scale(struct frame *p, const struct ratio *r)
 {
 	struct frame *q;
-	struct client *c;
 
 	assert(p != NULL);
 	assert(r != NULL);
 
-	(void) win_resize(p->win, &p->geom,
-		FRAME_BORDER, FRAME_SPACING);
+	if (-1 == win_resize(p->win, &p->geom,
+		FRAME_BORDER, FRAME_SPACING)) {
+		XUnmapWindow(display, p->win);
+	} else {
+		XMapWindow(display, p->win);
+	}
 
 	switch (p->type) {
 	case FRAME_BRANCH:
@@ -61,9 +68,7 @@ frame_scale(struct frame *p, const struct ratio *r)
 		break;
 
 	case FRAME_LEAF:
-		for (c = p->u.clients; c != NULL; c = c->next) {
-			/* TODO: win_resize() on each c->win here */
-		}
+		tile_clients(p->u.clients, p->layout, &p->geom);
 		break;
 	}
 
@@ -111,8 +116,25 @@ struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
 	struct frame *new;
+	struct geom new_geom, old_geom;
 
 	assert(old != NULL);
+
+	old_geom = old->geom;
+
+	layout_split(layout, order, &new_geom, &old_geom, 2);
+
+	/* prospectively match win_create() and win_resize() below */
+	{
+		struct geom tmp;
+
+		if (-1 == geom_inset(&tmp, &new_geom, FRAME_BORDER, FRAME_SPACING)
+		 || -1 == geom_inset(&tmp, &old_geom, FRAME_BORDER, FRAME_SPACING))
+		{
+			assert(errno == ERANGE);
+			return old;
+		}
+	}
 
 	new = malloc(sizeof *new);
 	if (new == NULL) {
@@ -124,8 +146,8 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 
 	switch (new->type) {
 	case FRAME_LEAF:
-		new->u.clients = NULL;
-		new->layout    = default_leaf_layout;
+		new->u.clients  = NULL;
+		new->layout     = default_leaf_layout;
 		break;
 
 	case FRAME_BRANCH:
@@ -134,21 +156,22 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 		break;
 	}
 
-	layout_split(layout, order, &new->geom, &old->geom, 2);
-
-	new->win = win_create(&new->geom, FRAME_NAME, FRAME_CLASS,
+	new->win = win_create(&new_geom, FRAME_NAME, FRAME_CLASS,
 		FRAME_BORDER, FRAME_SPACING);
 	if (!new->win) {
 		return NULL;
 	}
 
 	/* TODO: maybe set Window group (by XSetWMHints() WindowGroupHint) for frames' siblings */
-	(void) win_resize(old->win, &old->geom,
+	(void) win_resize(old->win, &old_geom,
 		FRAME_BORDER, FRAME_SPACING);
 
 	if (new->type == FRAME_LEAF) {
 		new->current_client = NULL;
 	}
+
+	old->geom = old_geom;
+	new->geom = new_geom;
 
 	switch (order) {
 	case ORDER_NEXT:

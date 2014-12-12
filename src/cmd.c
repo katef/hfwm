@@ -145,6 +145,10 @@ cmd_split(char *const argv[])
 			return -1;
 		}
 
+		if (new == current_frame) {
+			return 0;
+		}
+
 		new->u.children = frame_create_leaf(new, &new->geom, NULL);
 		if (new->u.children == NULL) {
 			/* TODO: combine geometry (merge, undoing the split) */
