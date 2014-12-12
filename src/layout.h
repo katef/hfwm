@@ -29,7 +29,7 @@ void
 layout_merge(enum order order, struct geom *dst, struct geom *src);
 
 int
-layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned n);
+layout_redistribute(struct geom *dst, struct geom *src, enum layout layout, unsigned n);
 
 int
 layout_resize(struct client *clients, const struct geom *geom);

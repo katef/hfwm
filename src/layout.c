@@ -101,33 +101,33 @@ layout_merge(enum order order, struct geom *dst, struct geom *src)
 }
 
 int
-layout_redistribute(struct geom *a, struct geom *b, enum layout layout, unsigned n)
+layout_redistribute(struct geom *dst, struct geom *src, enum layout layout, unsigned n)
 {
-	assert(a != NULL);
-	assert(b != NULL);
+	assert(dst != NULL);
+	assert(src != NULL);
 
 	switch (layout) {
 	case LAYOUT_MAX:
 		break;
 
 	case LAYOUT_HORIZ:
-		if (n > b->w) {
+		if (n > src->w) {
 			errno = ERANGE;
 			return -1;
 		}
 
-		a->w += n;
-		b->w -= n;
+		dst->w += n;
+		src->w -= n;
 		break;
 
 	case LAYOUT_VERT:
-		if (n > b->h) {
+		if (n > src->h) {
 			errno = ERANGE;
 			return -1;
 		}
 
-		a->h += n;
-		b->h -= n;
+		dst->h += n;
+		src->h -= n;
 		break;
 	}
 
