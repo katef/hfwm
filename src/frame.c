@@ -23,6 +23,8 @@ frame_resize(struct frame *p, const struct geom *g)
 	assert(p != NULL);
 	assert(g != NULL);
 
+	p->geom = *g;
+
 	if (-1 == win_resize(p->win, &p->geom,
 		FRAME_BORDER, FRAME_SPACING)) {
 		XUnmapWindow(display, p->win);
@@ -41,8 +43,6 @@ frame_resize(struct frame *p, const struct geom *g)
 		tile_clients(p->u.clients, p->layout, &p->geom);
 		break;
 	}
-
-	p->geom = *g;
 }
 
 static void
@@ -52,6 +52,8 @@ frame_scale(struct frame *p, const struct ratio *r)
 
 	assert(p != NULL);
 	assert(r != NULL);
+
+	geom_scale(&p->geom, r);
 
 	if (-1 == win_resize(p->win, &p->geom,
 		FRAME_BORDER, FRAME_SPACING)) {
@@ -71,8 +73,6 @@ frame_scale(struct frame *p, const struct ratio *r)
 		tile_clients(p->u.clients, p->layout, &p->geom);
 		break;
 	}
-
-	geom_scale(&p->geom, r);
 }
 
 enum rel
