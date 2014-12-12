@@ -364,7 +364,7 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 	a = curr->geom;
 	b = next->geom;
 
-	if (-1 == layout_redistribute(&a, &b, layout, n)) {
+	if (-1 == layout_redistribute(&b, &a, layout, n)) {
 		return -1;
 	}
 
