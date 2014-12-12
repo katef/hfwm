@@ -8,7 +8,7 @@
 struct geom;
 struct client;
 
-int
+void
 tile_clients(const struct client *clients, enum layout layout, const struct geom *g);
 
 #endif

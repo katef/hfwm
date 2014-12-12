@@ -174,14 +174,9 @@ event_x11(void)
 
 			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
 
-			if (-1 == tile_clients(current_frame->u.clients, current_frame->layout, &current_frame->geom)) {
-				perror("tile_clients");
-				/* TODO */
-			}
+			tile_clients(current_frame->u.clients, current_frame->layout, &current_frame->geom);
 
 			XSelectInput(display, e.xcreatewindow.window, EnterWindowMask | LeaveWindowMask);
-
-			XMapWindow(display, e.xcreatewindow.window);
 
 			event_issue(EVENT_EXTANCE, "create client %p",
 				(void *) e.xcreatewindow.window);
@@ -217,10 +212,7 @@ event_x11(void)
 
 				client_remove(&r->u.clients, e.xcreatewindow.window);
 
-				if (-1 == tile_clients(r->u.clients, r->layout, &r->geom)) {
-					perror("tile_clients");
-					/* TODO */
-				}
+				tile_clients(r->u.clients, r->layout, &r->geom);
 
 				event_issue(EVENT_EXTANCE, "destroy client %p",
 					(void *) e.xcreatewindow.window);

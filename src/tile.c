@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 
 #include <X11/Xlib.h>
 
@@ -10,7 +11,7 @@
 #include "tile.h"
 #include "win.h"
 
-int
+void
 tile_clients(const struct client *clients, enum layout layout, const struct geom *g)
 {
 	struct geom area;
@@ -20,7 +21,7 @@ tile_clients(const struct client *clients, enum layout layout, const struct geom
 	if (-1 == geom_inset(&area, g, TILE_BORDER,
 		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
 	{
-		return -1;
+		goto error;
 	}
 
 	/* XXX: the arithmetic here is impossible to follow. rework it */
@@ -73,12 +74,30 @@ tile_clients(const struct client *clients, enum layout layout, const struct geom
 			case LAYOUT_MAX:                          break;
 			}
 
-			win_resize(c->win, &old, TILE_BORDER, TILE_SPACING);
+			if (-1 == win_resize(c->win, &old, TILE_BORDER, TILE_SPACING)) {
+				goto error;
+			}
+
+			XMapWindow(display, c->win);
 
 			old = new;
 		}
 	}
 
-	return 0;
+	return;
+
+error:
+
+	assert(errno == ERANGE);
+
+	{
+		const struct client *c;
+
+		for (c = clients; c != NULL; c = c->next) {
+			XUnmapWindow(display, c->win);
+		}
+	}
+
+	/* TODO: map in "no windows fit" window */
 }
 

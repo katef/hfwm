@@ -13,12 +13,12 @@
 #include "win.h"
 #include "client.h"
 #include "current.h"
+#include "tile.h"
 
 static void
 frame_resize(struct frame *p, const struct geom *g)
 {
 	struct frame *q;
-	struct client *c;
 
 	assert(p != NULL);
 	assert(g != NULL);
@@ -34,9 +34,7 @@ frame_resize(struct frame *p, const struct geom *g)
 		break;
 
 	case FRAME_LEAF:
-		for (c = p->u.clients; c != NULL; c = c->next) {
-			/* TODO: win_resize() on each c->win here */
-		}
+		tile_clients(p->u.clients, p->layout, &p->geom);
 		break;
 	}
 
