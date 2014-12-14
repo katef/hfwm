@@ -115,16 +115,18 @@ frame_top(void)
 struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
-	struct frame *new;
+	struct frame *new, *parent;
 	struct geom new_geom, old_geom;
 
 	assert(old != NULL);
 
+	parent   = old->parent;
 	old_geom = old->geom;
 
 	layout_split(layout, order, &new_geom, &old_geom, 2);
 
 	/* prospectively match win_create() and win_resize() below */
+/* TODO: maybe go ahead and win_create() and win_resize() and undo things on error, instead */
 	{
 		struct geom tmp;
 
@@ -142,7 +144,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	}
 
 	new->type   = old->type;
-	new->parent = old->parent;
+	new->parent = parent;
 
 	switch (new->type) {
 	case FRAME_LEAF:
@@ -156,6 +158,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 		break;
 	}
 
+/* TODO: do after linked list insertion, for event handling */
 	new->win = win_create(&new_geom, FRAME_NAME, FRAME_CLASS,
 		FRAME_BORDER, FRAME_SPACING);
 	if (!new->win) {
@@ -174,17 +177,29 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	new->geom = new_geom;
 
 	switch (order) {
-	case ORDER_NEXT:
-		new->next = old->next;
-		old->next = new;
-		new->prev = old;
-		break;
-
 	case ORDER_PREV:
 		new->prev = old->prev;
 		old->prev = new;
 		new->next = old;
 		break;
+
+	case ORDER_NEXT:
+		new->next = old->next;
+		old->next = new;
+		new->prev = old;
+		break;
+	}
+
+	/* XXX: don't like frame_split() doing the parent stuff here.
+	 * because frame_create_leaf() doesn't, either. (maybe it should?) */
+	if (parent != NULL) {
+		assert(parent->type == FRAME_BRANCH);
+		assert(parent->u.children == old);
+
+		switch (order) {
+		case ORDER_PREV: parent->u.children = new; break;
+		case ORDER_NEXT: parent->u.children = old; break;
+		}
 	}
 
 	return new;
@@ -295,37 +310,6 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 	new->parent = parent;
 
 	return new;
-}
-
-struct frame *
-frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
-	struct client *clients)
-{
-	struct frame *a, *b;
-
-	assert(old != NULL);
-	assert(old->type == FRAME_LEAF);
-
-	a = frame_create_leaf(old, &old->geom, old->u.clients);
-	if (a == NULL) {
-		return NULL;
-	}
-
-	b = frame_split(a, layout, order);
-	if (b == NULL) {
-		free(a);
-		return NULL;
-	}
-
-	b->u.clients = clients;
-
-	old->type       = FRAME_BRANCH;
-	old->layout     = layout;
-	old->u.children = a; /* or b */
-
-	XLowerWindow(display, old->win);
-
-	return b;
 }
 
 struct frame *

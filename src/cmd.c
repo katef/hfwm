@@ -164,14 +164,46 @@ cmd_split(char *const argv[])
 			layout = layout_lookup(argv[1]);
 		}
 
-		new = frame_branch_leaf(current_frame, layout, order, NULL);
-		if (new == NULL) {
+		{
+			struct frame *a, *b;
+			enum layout orig_layout;
+
+			orig_layout = current_frame->layout;
+
+			a = frame_create_leaf(current_frame, &current_frame->geom, current_frame->u.clients);
+			if (a == NULL) {
+				return -1;
+			}
+
+			current_frame->type	      = FRAME_BRANCH;
+			current_frame->layout     = layout;
+			current_frame->u.children = a;
+
+			b = frame_split(a, layout, order);
+			if (b == NULL) {
+				goto error;
+			}
+
+			b->u.clients = NULL;
+
+			new = b;
+
+			break;
+
+error:
+
+			current_frame->u.clients = a->u.clients;
+			current_frame->type      = FRAME_LEAF;
+			current_frame->layout    = orig_layout;
+			free(a);
+
 			return -1;
 		}
 
 		break;
 	}
 
+/* TODO: set_current_frame()? */
 	current_frame = new;
 
 /* TODO: redraw everything below this node */

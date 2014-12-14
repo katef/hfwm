@@ -65,10 +65,6 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 	struct client *clients);
 
 struct frame *
-frame_branch_leaf(struct frame *old, enum layout layout, enum order order,
-	struct client *clients);
-
-struct frame *
 frame_focus(struct frame *curr, enum rel rel, enum order order);
 
 int
