@@ -139,22 +139,6 @@ cmd_split(char *const argv[])
 		} else {
 			layout = current_frame->parent->layout;
 		}
-
-		new = frame_split(current_frame, layout, order);
-		if (new == NULL) {
-			return -1;
-		}
-
-		if (new == current_frame) {
-			return 0;
-		}
-
-		new->u.children = frame_create_leaf(new, &new->geom, NULL);
-		if (new->u.children == NULL) {
-			/* TODO: combine geometry (merge, undoing the split) */
-			return -1;
-		}
-
 		break;
 
 	case FRAME_LEAF:
@@ -163,44 +147,16 @@ cmd_split(char *const argv[])
 		} else {
 			layout = layout_lookup(argv[1]);
 		}
-
-		{
-			struct frame *a, *b;
-			enum layout orig_layout;
-
-			orig_layout = current_frame->layout;
-
-			a = frame_create_leaf(current_frame, &current_frame->geom, current_frame->u.clients);
-			if (a == NULL) {
-				return -1;
-			}
-
-			current_frame->type	      = FRAME_BRANCH;
-			current_frame->layout     = layout;
-			current_frame->u.children = a;
-
-			b = frame_split(a, layout, order);
-			if (b == NULL) {
-				goto error;
-			}
-
-			b->u.clients = NULL;
-
-			new = b;
-
-			break;
-
-error:
-
-			current_frame->u.clients = a->u.clients;
-			current_frame->type      = FRAME_LEAF;
-			current_frame->layout    = orig_layout;
-			free(a);
-
-			return -1;
-		}
-
 		break;
+
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+
+	new = frame_branch(current_frame, layout, order);
+	if (new == NULL) {
+		return -1;
 	}
 
 /* TODO: set_current_frame()? */

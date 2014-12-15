@@ -378,9 +378,9 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	current_frame = frame_create_leaf(NULL, &g, NULL);
+	current_frame = frame_create_leaf(&g, NULL);
 	if (current_frame == NULL) {
-		perror("frame_create");
+		perror("frame_create_leaf");
 		return 1;
 	}
 

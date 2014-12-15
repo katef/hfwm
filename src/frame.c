@@ -112,15 +112,14 @@ frame_top(void)
 	return (struct frame *) p;
 }
 
-struct frame *
+static struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
-	struct frame *new, *parent;
+	struct frame *new;
 	struct geom new_geom, old_geom;
 
 	assert(old != NULL);
 
-	parent   = old->parent;
 	old_geom = old->geom;
 
 	layout_split(layout, order, &new_geom, &old_geom, 2);
@@ -144,7 +143,7 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 	}
 
 	new->type   = old->type;
-	new->parent = parent;
+	new->parent = old->parent;
 
 	switch (new->type) {
 	case FRAME_LEAF:
@@ -190,19 +189,70 @@ frame_split(struct frame *old, enum layout layout, enum order order)
 		break;
 	}
 
-	/* XXX: don't like frame_split() doing the parent stuff here.
-	 * because frame_create_leaf() doesn't, either. (maybe it should?) */
-	if (parent != NULL) {
-		assert(parent->type == FRAME_BRANCH);
-		assert(parent->u.children == old);
+	return new;
+}
+
+struct frame *
+frame_branch(struct frame *p, enum layout layout, enum order order)
+{
+	struct frame *a, *b;
+
+	assert(p != NULL);
+
+	switch (p->type) {
+	case FRAME_BRANCH:
+		a = p;
+
+		b = frame_split(a, layout, order);
+		if (b == NULL) {
+			return NULL;
+		}
+
+		if (b == a) {
+			return p;
+		}
+
+		b->u.children = frame_create_leaf(&b->geom, NULL);
+		if (b->u.children == NULL) {
+			/* TODO: combine geometry (merge, undoing the split) */
+			return NULL;
+		}
+
+		return b;
+
+	case FRAME_LEAF:
+		a = frame_create_leaf(&p->geom, p->u.clients);
+		if (a == NULL) {
+			return NULL;
+		}
+
+/* XXX: i think creating window before adding it to the list.
+maybe need to pass &head after all.
+or create window outside? could seperate all window creation from frame.c
+*/
+		b = frame_split(a, layout, order);
+		if (b == NULL) {
+			free(a);
+			return NULL;
+		}
+
+		assert(b->u.clients == NULL);
+
+/* TODO: event to redraw p->win for its new colours etc */
+
+		p->type   = FRAME_BRANCH;
+		p->layout = layout;
 
 		switch (order) {
-		case ORDER_PREV: parent->u.children = new; break;
-		case ORDER_NEXT: parent->u.children = old; break;
+		case ORDER_PREV: p->u.children = b; break;
+		case ORDER_NEXT: p->u.children = a; break;
 		}
+
+		return b;
 	}
 
-	return new;
+	errno = EINVAL;
+	return NULL;
 }
 
 void
@@ -278,8 +328,7 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 }
 
 struct frame *
-frame_create_leaf(struct frame *parent, const struct geom *geom,
-	struct client *clients)
+frame_create_leaf(const struct geom *geom, struct client *clients)
 {
 	struct frame *new;
 
@@ -307,7 +356,7 @@ frame_create_leaf(struct frame *parent, const struct geom *geom,
 
 	new->prev   = NULL;
 	new->next   = NULL;
-	new->parent = parent;
+	new->parent = NULL;
 
 	return new;
 }
