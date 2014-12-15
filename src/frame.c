@@ -260,10 +260,8 @@ frame_branch(struct frame *p, enum layout layout, enum order order)
 			return NULL;
 		}
 
-/* XXX: i think creating window before adding it to the list.
-maybe need to pass &head after all.
-or create window outside? could seperate all window creation from frame.c
-*/
+		a->parent = p;
+
 		b = frame_split(a, layout, order);
 		if (b == NULL) {
 			free(a);
