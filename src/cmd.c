@@ -159,8 +159,7 @@ cmd_split(char *const argv[])
 		return -1;
 	}
 
-/* TODO: set_current_frame()? */
-	current_frame = new;
+	set_current_frame(new);
 
 /* TODO: redraw everything below this node */
 
@@ -192,7 +191,7 @@ cmd_merge(char *const argv[])
 		return -1;
 	}
 
-	current_frame = new;
+	set_current_frame(new);
 
 /* TODO: redraw everything below this node */
 
