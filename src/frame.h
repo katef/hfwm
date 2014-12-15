@@ -52,6 +52,9 @@ struct frame *
 frame_top(void);
 
 struct frame *
+frame_create_leaf(const struct geom *geom, struct client *clients);
+
+struct frame *
 frame_branch(struct frame *p, enum layout layout, enum order order);
 
 void
@@ -59,9 +62,6 @@ frame_cat(struct frame **head, struct frame **tail);
 
 struct frame *
 frame_merge(struct frame *old, enum layout layout, enum order order);
-
-struct frame *
-frame_create_leaf(const struct geom *geom, struct client *clients);
 
 struct frame *
 frame_focus(struct frame *curr, enum rel rel, enum order order);

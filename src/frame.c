@@ -112,6 +112,40 @@ frame_top(void)
 	return (struct frame *) p;
 }
 
+struct frame *
+frame_create_leaf(const struct geom *geom, struct client *clients)
+{
+	struct frame *new;
+
+	assert(geom != NULL);
+
+	new = malloc(sizeof *new);
+	if (new == NULL) {
+		return NULL;
+	}
+
+	new->win = win_create(geom, FRAME_NAME, FRAME_CLASS,
+		FRAME_BORDER, FRAME_SPACING);
+	if (!new->win) {
+		free(new);
+		return NULL;
+	}
+
+	new->current_client = NULL;
+
+	new->type      = FRAME_LEAF;
+	new->u.clients = clients;
+
+	new->layout = default_leaf_layout;
+	new->geom   = *geom;
+
+	new->prev   = NULL;
+	new->next   = NULL;
+	new->parent = NULL;
+
+	return new;
+}
+
 static struct frame *
 frame_split(struct frame *old, enum layout layout, enum order order)
 {
@@ -325,40 +359,6 @@ frame_merge(struct frame *p, enum layout layout, enum order order)
 	free(old);
 
 	return p;
-}
-
-struct frame *
-frame_create_leaf(const struct geom *geom, struct client *clients)
-{
-	struct frame *new;
-
-	assert(geom != NULL);
-
-	new = malloc(sizeof *new);
-	if (new == NULL) {
-		return NULL;
-	}
-
-	new->win = win_create(geom, FRAME_NAME, FRAME_CLASS,
-		FRAME_BORDER, FRAME_SPACING);
-	if (!new->win) {
-		free(new);
-		return NULL;
-	}
-
-	new->current_client = NULL;
-
-	new->type      = FRAME_LEAF;
-	new->u.clients = clients;
-
-	new->layout = default_leaf_layout;
-	new->geom   = *geom;
-
-	new->prev   = NULL;
-	new->next   = NULL;
-	new->parent = NULL;
-
-	return new;
 }
 
 struct frame *
