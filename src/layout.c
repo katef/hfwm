@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "axis.h"
 #include "geom.h"
 #include "order.h"
 #include "layout.h"

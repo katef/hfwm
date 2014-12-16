@@ -6,6 +6,7 @@
 
 #include <X11/Xlib.h>
 
+#include "axis.h"
 #include "geom.h"
 #include "order.h"
 #include "layout.h"

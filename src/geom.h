@@ -25,5 +25,8 @@ geom_ratio(struct ratio *r, const struct geom *old, const struct geom *new);
 void
 geom_scale(struct geom *g, const struct ratio *r);
 
+int
+geom_move(struct geom *g, enum axis axis, int n);
+
 #endif
 

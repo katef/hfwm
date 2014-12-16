@@ -1,8 +1,10 @@
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
+#include <limits.h>
 #include <errno.h>
 
+#include "axis.h"
 #include "geom.h"
 
 int
@@ -56,5 +58,32 @@ geom_scale(struct geom *g, const struct ratio *r)
 
 	g->w *= r->w;
 	g->h *= r->h;
+}
+
+int
+geom_move(struct geom *g, enum axis axis, int n)
+{
+	unsigned int *m;
+
+	assert(g != NULL);
+
+	switch (axis) {
+	case AXIS_HORIZ: m = &g->x; break;
+	case AXIS_VERT:  m = &g->y; break;
+	}
+
+	if (n > 0 && UINT_MAX - *m > (unsigned) n) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	if (n < 0 && *m < (unsigned) -n) {
+		errno = ERANGE;
+		return -1;
+	}
+
+	*m += n;
+
+	return 0;
 }
 

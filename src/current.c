@@ -6,6 +6,7 @@
 #include "current.h"
 #include "order.h"
 #include "layout.h"
+#include "axis.h"
 #include "geom.h"
 #include "client.h"
 #include "event.h"

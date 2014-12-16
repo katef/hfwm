@@ -7,6 +7,7 @@
 #include <X11/X.h>
 #include <X11/Xutil.h>
 
+#include "axis.h"
 #include "geom.h"
 #include "win.h"
 #include "key.h"

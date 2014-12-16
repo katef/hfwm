@@ -18,6 +18,7 @@
 
 #include "args.h"
 #include "cmd.h"
+#include "axis.h"
 #include "geom.h"
 #include "order.h"
 #include "layout.h"
