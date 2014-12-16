@@ -5,8 +5,8 @@ struct geom;
 struct client;
 
 enum layout {
-	LAYOUT_HORIZ,
-	LAYOUT_VERT,
+	LAYOUT_HORIZ = AXIS_HORIZ,
+	LAYOUT_VERT  = AXIS_VERT,
 	LAYOUT_MAX
 };
 
