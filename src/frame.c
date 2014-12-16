@@ -439,6 +439,45 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 		break;
 	}
 
+	/*
+	 * The gap between frames is not n, because of frame spacing and border.
+	 * Therefore we can't find the offset for moving one frame from a and b's
+	 * geometries, except by taking that into account. So it works out neater
+	 * to switch on orientation and do the arithmetic here instead.
+	 */
+
+	{
+		struct geom *o;
+		unsigned *m;
+
+		switch (order) {
+		case ORDER_NEXT: o = &b; break;
+		case ORDER_PREV: o = &a; break;
+		}
+
+		/* TODO: move to geom_translate() */
+
+		switch (layout) {
+		case LAYOUT_MAX:
+			return 0;
+
+		case LAYOUT_HORIZ: m = &o->x; break;
+		case LAYOUT_VERT:  m = &o->y; break;
+		}
+
+		switch (order) {
+		case ORDER_NEXT:
+			assert(*m >= n);
+			*m -= n;
+			break;
+
+		case ORDER_PREV:
+			/* assert(*m <= TODO: total width, perhaps); */
+			*m += n;
+			break;
+		}
+	}
+
 	/* TODO: deal with divide by zero
 	 * assuming the geom was non-zero beforehand, this can only happen
 	 * if n is greater than one dimension, so layout_redistribute
