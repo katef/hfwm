@@ -72,7 +72,7 @@ geom_move(struct geom *g, enum axis axis, int n)
 	case AXIS_VERT:  m = &g->y; break;
 	}
 
-	if (n > 0 && UINT_MAX - *m > (unsigned) n) {
+	if (n > 0 && UINT_MAX - *m < (unsigned) n) {
 		errno = ERANGE;
 		return -1;
 	}
