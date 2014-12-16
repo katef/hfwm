@@ -50,6 +50,7 @@ eyecandy() {
 	off) prefix=dark ;;
 	esac
 
+# TODO: frames should be transparent body, opaque border
 	case $type in
 	root)              colour=none   ;;
 	branch|leaf|frame) colour=red    ;;
@@ -57,18 +58,21 @@ eyecandy() {
 	unmanaged)         colour=purple ;;
 	esac
 
+	# we don't mind here if a window was destroyed
+	set +e
+
 	if [ $colour != none ]; then
 		xwinthing $id bc=$prefix$colour
 	fi
 
-	if [ $type = root ]; then
-		return
+	if [ $type != root ]; then
+		case $active in
+		on)  transset -i $id --inc > /dev/null ;;
+		off) transset -i $id --dec > /dev/null ;;
+		esac
 	fi
 
-	case $active in
-	on)  transset -i $id --inc > /dev/null ;;
-	off) transset -i $id --dec > /dev/null ;;
-	esac
+	set -e
 }
 
 # This is usually the diamond key for a Sun, the command key for a mac, and the
@@ -116,6 +120,8 @@ hc unbind
 	Button4 spawn xclock -hd purple
 	Button5 spawn xclock -hd yellow
 
+# TODO: button 4/5 (scroll) for cycling through clients within a frame
+
 	q split next vert
 	w split next horiz
 
@@ -145,7 +151,7 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 		echo $event $*
 
 		case $event in
-		create)
+		map)
 			type=$1
 			id=$2
 
@@ -155,12 +161,13 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 				;;
 
 			leaf|branch)
+# TODO: move to bottom
 				hc focusid $id frame
 				;;
 			esac
 			;;
 
-		destroy)
+		unmap)
 			;;
 
 		enter)
@@ -193,12 +200,6 @@ socat UNIX-RECV:$HFWM_SUB stdout \
 			id=$2
 
 			eyecandy $type $id off
-
-			case $type in
-			unmanaged)
-				# TODO: raise window
-				;;
-			esac
 			;;
 
 		focus)

@@ -112,6 +112,8 @@ event_x11(void)
 			break;
 
 		case ButtonPress:
+			break;
+
 		case ButtonRelease:
 			{
 				struct key *p;
@@ -136,9 +138,33 @@ event_x11(void)
 			break;
 
 		case CreateNotify:
+			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
+			XSelectInput(display, e.xcreatewindow.window, EnterWindowMask | LeaveWindowMask);
+			break;
+
+		case DestroyNotify:
+			/* TODO: also need to remove windows on DestroyNotify?
+			 * are windows always unmapped first? */
+			break;
+
+		case EnterNotify:
+		case LeaveNotify:
+			event_issue(EVENT_CROSSING, "%s %s %p",
+				e.type == EnterNotify ? "enter" : "leave",
+				win_type(e.xcrossing.window),
+				(void *) e.xcrossing.window);
+			break;
+
+		case MapRequest:
+			/* TODO: this is where to grab e.g tabs window and reparent per frame (or root) */
+			XMapWindow(display, e.xmaprequest.window);
+			break;
+
+		case MapNotify:
 			if (current_frame->type != FRAME_LEAF) {
-				event_issue(EVENT_EXTANCE, "create unmanaged %p",
-					(void *) e.xcreatewindow.window);
+				/* TODO: find a leaf to put it in, instead. maybe have a current_leaf variable? */
+				event_issue(EVENT_EXTANCE, "map unmanaged %p",
+					(void *) e.xmap.window);
 				continue;
 			}
 
@@ -149,12 +175,12 @@ event_x11(void)
 				top = frame_top();
 				assert(top != NULL);
 
-				r = frame_find_win(top, e.xcreatewindow.window);
+				r = frame_find_win(top, e.xmap.window);
 				if (r != NULL) {
-					event_issue(EVENT_EXTANCE, "create %s %p",
+					/* our frame's window */
+					event_issue(EVENT_EXTANCE, "map %s %p",
 						frame_type(r),
-						(void *) e.xcreatewindow.window);
-					/* our frame's window; disregard */
+						(void *) e.xmap.window);
 					continue;
 				}
 			}
@@ -162,28 +188,24 @@ event_x11(void)
 			{
 				struct client *new;
 
-				new = client_add(&current_frame->u.clients, e.xcreatewindow.window);
+				new = client_add(&current_frame->u.clients, e.xmap.window);
 				if (new == NULL) {
 					perror("client_add");
 					continue;
 				}
 
-				/* XXX: focusid on IPC create event instead */
+				/* XXX: focusid on IPC map event instead */
 				set_current_client(current_frame, new);
 			}
 
-			XSetWindowBorderWidth(display, e.xcreatewindow.window, TILE_BORDER);
-
 			tile_clients(current_frame->u.clients, current_frame->layout, &current_frame->geom);
 
-			XSelectInput(display, e.xcreatewindow.window, EnterWindowMask | LeaveWindowMask);
-
-			event_issue(EVENT_EXTANCE, "create client %p",
-				(void *) e.xcreatewindow.window);
+			event_issue(EVENT_EXTANCE, "map client %p",
+				(void *) e.xmap.window);
 
 			break;
 
-		case DestroyNotify:
+		case UnmapNotify:
 			{
 				const struct frame *top;
 				struct frame *r;
@@ -191,40 +213,40 @@ event_x11(void)
 				top = frame_top();
 				assert(top != NULL);
 
-				r = frame_find_win(top, e.xcreatewindow.window);
+				r = frame_find_win(top, e.xmap.window);
 				/* TODO: if it's a frame... */
 				if (r != NULL) {
-					event_issue(EVENT_EXTANCE, "destroy %s %p",
+					event_issue(EVENT_EXTANCE, "unmap %s %p",
 						frame_type(r),
-						(void *) e.xcreatewindow.window);
+						(void *) e.xmap.window);
 					continue;
 				}
 
-				r = frame_find_client(top, e.xcreatewindow.window);
+				r = frame_find_client(top, e.xmap.window);
 				if (r == NULL) {
-					event_issue(EVENT_EXTANCE, "destroy unmanaged %p",
-						(void *) e.xcreatewindow.window);
+					event_issue(EVENT_EXTANCE, "unmap unmanaged %p",
+						(void *) e.xmap.window);
 					continue;
 				}
 
 				assert(r->type == FRAME_LEAF);
 				set_current_client(r, NULL);
 
-				client_remove(&r->u.clients, e.xcreatewindow.window);
+				client_remove(&r->u.clients, e.xmap.window);
 
 				tile_clients(r->u.clients, r->layout, &r->geom);
 
-				event_issue(EVENT_EXTANCE, "destroy client %p",
-					(void *) e.xcreatewindow.window);
+				event_issue(EVENT_EXTANCE, "unmap client %p",
+					(void *) e.xmap.window);
 			}
 			break;
 
-		case EnterNotify:
-		case LeaveNotify:
-			event_issue(EVENT_CROSSING, "%s %s %p",
-				e.type == EnterNotify ? "enter" : "leave",
-				win_type(e.xcrossing.window),
-				(void *) e.xcrossing.window);
+		case ConfigureRequest:
+			/* TODO */
+			break;
+
+		case ConfigureNotify:
+			/* TODO */
 			break;
 
 		default:
