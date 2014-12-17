@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -41,7 +42,8 @@ frame_resize(struct frame *p, const struct geom *g)
 		break;
 
 	case FRAME_LEAF:
-		tile_clients(p->u.clients, p->layout, &p->geom);
+		tile_clients(p->u.clients, p->layout, &p->geom,
+			p->current_client);
 		break;
 	}
 }
@@ -71,7 +73,8 @@ frame_scale(struct frame *p, const struct ratio *r)
 		break;
 
 	case FRAME_LEAF:
-		tile_clients(p->u.clients, p->layout, &p->geom);
+		tile_clients(p->u.clients, p->layout, &p->geom,
+			p->current_client);
 		break;
 	}
 }
@@ -446,36 +449,22 @@ frame_redistribute(struct frame *p, enum layout layout, enum order order, unsign
 	 * geometries, except by taking that into account. So it works out neater
 	 * to switch on orientation and do the arithmetic here instead.
 	 */
-
 	{
 		struct geom *o;
-		unsigned *m;
+		int d;
 
-		switch (order) {
-		case ORDER_NEXT: o = &b; break;
-		case ORDER_PREV: o = &a; break;
-		}
-
-		/* TODO: move to geom_translate() */
-
-		switch (layout) {
-		case LAYOUT_MAX:
-			return 0;
-
-		case LAYOUT_HORIZ: m = &o->x; break;
-		case LAYOUT_VERT:  m = &o->y; break;
+		if (n > INT_MAX) {
+			errno = ERANGE;
+			return -1;
 		}
 
 		switch (order) {
-		case ORDER_NEXT:
-			assert(*m >= n);
-			*m -= n;
-			break;
+		case ORDER_NEXT: o = &b; d = - (signed) n; break;
+		case ORDER_PREV: o = &a; d = + (signed) n; break;
+		}
 
-		case ORDER_PREV:
-			/* assert(*m <= TODO: total width, perhaps); */
-			*m += n;
-			break;
+		if (-1 == geom_move(o, (enum axis) layout, d)) {
+			return -1;
 		}
 	}
 
