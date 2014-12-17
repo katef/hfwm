@@ -210,6 +210,7 @@ event_x11(void)
 		case UnmapNotify:
 			{
 				const struct frame *top;
+				struct client *c;
 				struct frame *r;
 
 				top = frame_top();
@@ -232,9 +233,29 @@ event_x11(void)
 				}
 
 				assert(r->type == FRAME_LEAF);
-				set_current_client(r, NULL);
+
+				/* TODO: an awful lot of searching going on here. rethink all this */
+				c = client_find(r->u.clients, e.xmap.window);
+				assert(c != NULL);
+
+				if (r->current_client == c) {
+					struct client *p;
+
+					p = client_prev(r->u.clients, c);
+					if (p == NULL) {
+						p = r->u.clients;
+					}
+
+					if (p == c) {
+						p = p->next;
+					}
+
+					set_current_client(r, p);
+				}
 
 				client_remove(&r->u.clients, e.xmap.window);
+
+				assert(r->current_client != NULL || r->u.clients == NULL);
 
 				tile_clients(r->u.clients, r->layout, &r->geom,
 					r->current_client);
