@@ -110,8 +110,6 @@ struct client *
 client_cycle(const struct client *head, const struct client *current_client,
 	enum order order)
 {
-	const struct client *p;
-
 	if (current_client == NULL) {
 		return NULL;
 	}
@@ -120,13 +118,7 @@ client_cycle(const struct client *head, const struct client *current_client,
 
 	switch (order) {
 	case ORDER_PREV:
-		for (p = head; p->next != NULL; p = p->next) {
-			if (p->next == current_client) {
-				return (struct client *) p;
-			}
-		}
-
-		return (struct client *) p;
+		return client_prev(head, current_client);
 
 	case ORDER_NEXT:
 		if (current_client->next == NULL) {
