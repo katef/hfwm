@@ -16,6 +16,9 @@ struct client *
 client_find(const struct client *head, Window win);
 
 struct client *
+client_prev(const struct client *head, const struct client *c);
+
+struct client *
 client_add(struct client **head, Window win);
 
 void

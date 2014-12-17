@@ -52,6 +52,20 @@ client_find(const struct client *head, Window win)
 }
 
 struct client *
+client_prev(const struct client *head, const struct client *c)
+{
+	const struct client *p;
+
+	for (p = head; p != NULL; p = p->next) {
+		if (p->next == c) {
+			return (struct client *) p;
+		}
+	}
+
+	return NULL;
+}
+
+struct client *
 client_add(struct client **head, Window win)
 {
 	struct client *new;
