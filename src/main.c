@@ -199,7 +199,8 @@ event_x11(void)
 				set_current_client(current_frame, new);
 			}
 
-			tile_clients(current_frame->u.clients, current_frame->layout, &current_frame->geom);
+			tile_clients(current_frame->u.clients, current_frame->layout,
+				&current_frame->geom, current_frame->current_client);
 
 			event_issue(EVENT_EXTANCE, "map client %p",
 				(void *) e.xmap.window);
@@ -235,7 +236,8 @@ event_x11(void)
 
 				client_remove(&r->u.clients, e.xmap.window);
 
-				tile_clients(r->u.clients, r->layout, &r->geom);
+				tile_clients(r->u.clients, r->layout, &r->geom,
+					r->current_client);
 
 				event_issue(EVENT_EXTANCE, "unmap client %p",
 					(void *) e.xmap.window);

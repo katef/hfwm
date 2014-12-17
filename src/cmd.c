@@ -324,7 +324,8 @@ cmd_layout(char *const argv[])
 		layout = layout_cycle(current_frame->layout, delta);
 	}
 
-	tile_clients(current_frame->u.clients, layout, &current_frame->geom);
+	tile_clients(current_frame->u.clients, layout, &current_frame->geom,
+		current_frame->current_client);
 
 	current_frame->layout = layout;
 

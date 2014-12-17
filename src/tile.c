@@ -12,36 +12,75 @@
 #include "tile.h"
 #include "win.h"
 
-void
-tile_clients(const struct client *clients, enum layout layout, const struct geom *g)
+static int
+tile_empty(const struct geom *area)
 {
-	struct geom area;
+	assert(area != NULL);
 
-	assert(g != NULL);
+	/* TODO: map in an "empty" window */
+	(void) area;
 
-	if (-1 == geom_inset(&area, g, TILE_BORDER,
-		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
-	{
-		goto error;
+	return 0;
+}
+
+static int
+tile_max(const struct client *clients, const struct geom *area,
+	const struct client *curr)
+{
+	const struct client *c;
+
+	assert(clients != NULL);
+	assert(area != NULL);
+	assert(curr != NULL);
+
+	/* height reserved for tabs */
+	/* TODO: map in "tabs" window, if present */
+#if 0
+	area->y += 30;
+	area->h -= 30;
+#endif
+
+	for (c = clients; c != NULL; c = c->next) {
+		if (c == curr) {
+			continue;
+		}
+
+		XUnmapWindow(display, c->win);
 	}
 
+	if (-1 == win_resize(curr->win, area, TILE_BORDER, TILE_SPACING)) {
+		return -1;
+	}
+
+	/* TODO */
+	XMapWindow(display, curr->win);
+
+	return 0;
+}
+
+static int
+tile_axis(const struct client *clients, const struct geom *area, enum axis axis)
+{
+	struct geom g;
+	struct geom new, old;
+	const struct client *c;
+	unsigned n;
+
+	assert(clients != NULL);
+	assert(area != NULL);
+
+	g = *area;
+
 	/* XXX: the arithmetic here is impossible to follow. rework it */
-	area.w += TILE_BORDER * 2;
-	area.h += TILE_BORDER * 2;
+	g.w += TILE_BORDER * 2;
+	g.h += TILE_BORDER * 2;
 
 	/* this is overhang for odd number of spacing between tiles */
 	/* TODO: check limit. maybe do this using geom_something(), for DRY */
-	switch (layout) {
-	case LAYOUT_HORIZ: area.w -= TILE_SPACING; break;
-	case LAYOUT_VERT:  area.h -= TILE_SPACING; break;
-	case LAYOUT_MAX:                           break;
+	switch (axis) {
+	case AXIS_HORIZ: g.w -= TILE_SPACING; break;
+	case AXIS_VERT:  g.h -= TILE_SPACING; break;
 	}
-
-	/* height reserved for tabs */
-#if 0
-	area.y += 30;
-	area.h -= 30;
-#endif
 
 	/*
 	 * This is worth some explanation.
@@ -53,36 +92,61 @@ tile_clients(const struct client *clients, enum layout layout, const struct geom
 	 * This results in n even-sized windows across the area, but accounts
 	 * for fractional skew should n not divide exactly.
 	 */
-	{
-		struct geom new, old;
-		const struct client *c;
-		unsigned n;
 
-		old = area;
+	old = g;
 
-		for (n = client_count(clients), c = clients; n > 0; n--, c = c->next) {
-			assert(c != NULL);
+	for (n = client_count(clients), c = clients; n > 0; n--, c = c->next) {
+		assert(c != NULL);
 
-			/* XXX: would rather ORDER_NEXT here. order should be an option passed to this function */
-			if (n >= 2) {
-				layout_split(layout, ORDER_PREV, &new, &old, n);
-			}
-
-			/* to account for the double space from layout_split() */
-			switch (layout) {
-			case LAYOUT_HORIZ: old.w += TILE_SPACING; break;
-			case LAYOUT_VERT:  old.h += TILE_SPACING; break;
-			case LAYOUT_MAX:                          break;
-			}
-
-			if (-1 == win_resize(c->win, &old, TILE_BORDER, TILE_SPACING)) {
-				goto error;
-			}
-
-			XMapWindow(display, c->win);
-
-			old = new;
+		/* XXX: would rather ORDER_NEXT here. order should be an option passed to this function */
+		if (n >= 2) {
+			layout_split((enum layout) axis, ORDER_PREV, &new, &old, n);
 		}
+
+		/* to account for the double space from layout_split() */
+		switch (axis) {
+		case AXIS_HORIZ: old.w += TILE_SPACING; break;
+		case AXIS_VERT:  old.h += TILE_SPACING; break;
+		}
+
+		if (-1 == win_resize(c->win, &old, TILE_BORDER, TILE_SPACING)) {
+			return -1;
+		}
+
+		XMapWindow(display, c->win);
+
+		old = new;
+	}
+
+	return 0;
+}
+
+void
+tile_clients(const struct client *clients, enum layout layout, const struct geom *g,
+	const struct client *curr)
+{
+	struct geom area;
+	int r;
+
+	assert(g != NULL);
+	assert(curr != NULL || clients == NULL);
+
+	if (-1 == geom_inset(&area, g, TILE_BORDER,
+		FRAME_BORDER + FRAME_SPACING + TILE_MARGIN - TILE_SPACING))
+	{
+		goto error;
+	}
+
+	if (clients == NULL) {
+		r = tile_empty(&area);
+	} else if (layout == LAYOUT_MAX) {
+		r = tile_max(clients, &area, curr);
+	} else {
+		r = tile_axis(clients, &area, (enum axis) layout);
+	}
+
+	if (r == -1) {
+		goto error;
 	}
 
 	return;
@@ -99,6 +163,6 @@ error:
 		}
 	}
 
-	/* TODO: map in "no windows fit" window */
+	/* TODO: map in a "no windows fit" window */
 }
 

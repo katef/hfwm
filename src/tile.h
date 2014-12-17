@@ -9,7 +9,8 @@ struct geom;
 struct client;
 
 void
-tile_clients(const struct client *clients, enum layout layout, const struct geom *g);
+tile_clients(const struct client *clients, enum layout layout, const struct geom *g,
+	const struct client *curr);
 
 #endif
 
