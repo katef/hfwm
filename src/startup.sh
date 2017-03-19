@@ -1,5 +1,11 @@
 #!/bin/sh -e
 
+#
+# Copyright 2014-2017 Katherine Flavel
+#
+# See LICENCE for the full copyright terms.
+#
+
 # An example for setup and event automation for hfwm.
 #
 # This is as close as it gets to a configuration file for hfwm. There's no
