@@ -18,7 +18,8 @@ SRC += src/win.c
 
 PROG += hfwm
 
-LFLAGS.hfwm += -lX11
+CFLAGS += ${CFLAGS.x11}
+LFLAGS.hfwm += ${LIBS.x11}
 
 .for src in ${SRC:Msrc/*.c}
 ${BUILD}/bin/hfwm: ${BUILD}/${src:R}.o
