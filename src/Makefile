@@ -18,7 +18,7 @@ SRC += src/win.c
 
 PROG += hfwm
 
-LFLAGS_hfwm += -lX11
+LFLAGS.hfwm += -lX11
 
 .for src in ${SRC:Msrc/*.c}
 ${BUILD}/bin/hfwm: ${BUILD}/${src:R}.o
